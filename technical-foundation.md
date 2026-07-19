@@ -459,6 +459,8 @@ DEFAULT_COUNTRY=
 | Method | Route | Purpose |
 |---|---|---|
 | POST | `/api/auth/[...nextauth]` | Login/session (NextAuth) |
+| POST | `/api/auth/register` | Email/password signup (bcrypt hash, creates User) |
+| POST | `/api/stripe/connect-onboard` | Create/refresh seller Stripe Connect account + onboarding link |
 | POST | `/api/listings` | Create listing |
 | GET | `/api/listings/[id]` | Get listing detail |
 | PATCH | `/api/listings/[id]` | Edit listing |
@@ -483,3 +485,11 @@ DEFAULT_COUNTRY=
 - Webhook routes (`/api/webhooks/*`) must verify signatures and be idempotent — no exceptions.
 - Keep `/lib` files as the only place external SDKs (Stripe, Cloudinary, etc.) are initialized — don't instantiate clients inside route handlers.
 - RBAC checks (`/lib/rbac.ts`) must gate every `/admin` route and API handler that touches user/order/listing data at the admin level.
+
+---
+
+## Decisions log (deviations from first-draft plan, with rationale)
+
+- **Auth uses JWT sessions without the Prisma/DB adapter.** The Auth.js `@auth/prisma-adapter` requires `emailVerified` to be a `DateTime?` and adds `Account`/`Session`/`VerificationToken` tables — both conflict with this schema (`emailVerified Boolean`, no session tables). To keep the documented schema authoritative, NextAuth runs with `session.strategy = "jwt"`, a Credentials provider (bcrypt vs `User.passwordHash`), and Google OAuth. Google sign-ins are upserted into `User` by email inside the `signIn`/`jwt` callbacks. No schema change, no migration needed. Revisit if we later need server-side session revocation lists.
+- **Prisma pinned to v6.19.3** (not v7). Prisma 7 removed `url = env("DATABASE_URL")` from the `datasource` block in favour of `prisma.config.ts` + driver adapters, which would require rewriting the Section 1 schema. Pinned v6 keeps the documented schema valid as written.
+- **`tsx`** added as a dev dependency solely to run the TypeScript `prisma/seed.ts` via `prisma db seed` (the Prisma-standard seed runner).
