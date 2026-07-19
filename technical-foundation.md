@@ -14,8 +14,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ==============================
@@ -493,3 +494,4 @@ DEFAULT_COUNTRY=
 - **Auth uses JWT sessions without the Prisma/DB adapter.** The Auth.js `@auth/prisma-adapter` requires `emailVerified` to be a `DateTime?` and adds `Account`/`Session`/`VerificationToken` tables — both conflict with this schema (`emailVerified Boolean`, no session tables). To keep the documented schema authoritative, NextAuth runs with `session.strategy = "jwt"`, a Credentials provider (bcrypt vs `User.passwordHash`), and Google OAuth. Google sign-ins are upserted into `User` by email inside the `signIn`/`jwt` callbacks. No schema change, no migration needed. Revisit if we later need server-side session revocation lists.
 - **Prisma pinned to v6.19.3** (not v7). Prisma 7 removed `url = env("DATABASE_URL")` from the `datasource` block in favour of `prisma.config.ts` + driver adapters, which would require rewriting the Section 1 schema. Pinned v6 keeps the documented schema valid as written.
 - **`tsx`** added as a dev dependency solely to run the TypeScript `prisma/seed.ts` via `prisma db seed` (the Prisma-standard seed runner).
+- **Supabase two-URL datasource.** Per Supabase's official Prisma guide, `datasource db` uses `url = env("DATABASE_URL")` (transaction pooler, port 6543, `pgbouncer=true`) for the app and `directUrl = env("DIRECT_URL")` (session pooler, port 5432) for migrations — Prisma migrate cannot run through pgbouncer. Both `DATABASE_URL` and `DIRECT_URL` must be present in `.env` (CLI/migrations) and `.env.local` (runtime).
