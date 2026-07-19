@@ -1,0 +1,295 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==============================
+// ENUMS
+// ==============================
+
+enum VerificationLevel {
+  LEVEL_1_BASIC
+  LEVEL_2_SELLER
+  LEVEL_3_ID_VERIFIED
+}
+
+enum ListingStatus {
+  DRAFT
+  PENDING_REVIEW
+  ACTIVE
+  RESERVED
+  SOLD
+  HIDDEN
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  SHIPPED
+  DELIVERED
+  RELEASED
+  DISPUTED
+  REFUNDED
+  CANCELLED
+}
+
+enum WalletState {
+  PENDING
+  AVAILABLE
+  WITHDRAWN
+  FROZEN
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED_REFUND
+  RESOLVED_RELEASE
+  CLOSED
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  MANAGER
+  LISTING_VERIFICATION_OFFICER
+  KYC_REVIEWER
+  SUPPORT_AGENT
+  TRUST_AND_SAFETY
+  MARKETING
+  SEO_CONTENT
+  FINANCE
+}
+
+enum NotificationChannel {
+  EMAIL
+  PUSH
+  SMS
+}
+
+// ==============================
+// CORE MODELS
+// ==============================
+
+model User {
+  id                  String             @id @default(cuid())
+  email               String             @unique
+  passwordHash        String?
+  phone               String?
+  phoneVerified       Boolean            @default(false)
+  emailVerified       Boolean            @default(false)
+  verificationLevel   VerificationLevel  @default(LEVEL_1_BASIC)
+  stripeAccountId     String?            // Stripe Connect account id (seller payouts)
+  stripeCustomerId    String?            // Stripe customer id (buyer payments)
+  twoFactorEnabled    Boolean            @default(false)
+  country             String?
+  currency            String?
+  language            String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  addresses           Address[]
+  listings            Listing[]          @relation("SellerListings")
+  ordersAsBuyer       Order[]            @relation("BuyerOrders")
+  ordersAsSeller      Order[]            @relation("SellerOrders")
+  walletTransactions  WalletTransaction[]
+  messagesSent        Message[]          @relation("MessageSender")
+  ratingsGiven        Rating[]           @relation("RatingAuthor")
+  ratingsReceived     Rating[]           @relation("RatingTarget")
+  notifications       Notification[]
+  adminRoles          AdminRoleAssignment[]
+  auditLogs           AuditLog[]
+}
+
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  line1       String
+  line2       String?
+  city        String
+  postalCode  String
+  country     String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  parentId  String?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+  listings  Listing[]
+}
+
+model Listing {
+  id            String        @id @default(cuid())
+  sellerId      String
+  seller        User          @relation("SellerListings", fields: [sellerId], references: [id])
+  title         String
+  description   String
+  categoryId    String
+  category      Category      @relation(fields: [categoryId], references: [id])
+  brand         String?
+  size          String?
+  condition     String?
+  color         String?
+  price         Decimal       @db.Decimal(10, 2)
+  currency      String
+  parcelSize    String        // e.g. small/medium/large/custom
+  images        String[]      // CDN urls
+  status        ListingStatus @default(DRAFT)
+  country       String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  orders        Order[]
+  favorites     Favorite[]
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, listingId])
+}
+
+model SavedSearch {
+  id        String   @id @default(cuid())
+  userId    String
+  query     String
+  filters   Json
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  buyerId           String
+  buyer             User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  sellerId          String
+  seller            User        @relation("SellerOrders", fields: [sellerId], references: [id])
+  listingId         String
+  listing           Listing     @relation(fields: [listingId], references: [id])
+  status            OrderStatus @default(PENDING_PAYMENT)
+
+  itemPrice         Decimal     @db.Decimal(10, 2)
+  shippingPrice     Decimal     @db.Decimal(10, 2)
+  protectionFee     Decimal     @db.Decimal(10, 2)
+  totalPrice        Decimal     @db.Decimal(10, 2)
+  currency          String
+
+  stripePaymentIntentId String?
+  shippingCarrier   String?
+  trackingNumber    String?
+  labelUrl          String?
+  shippedAt         DateTime?
+  deliveredAt       DateTime?
+  autoConfirmAt     DateTime?   // delivery + confirm window
+  releasedAt        DateTime?
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  walletTransactions WalletTransaction[]
+  dispute           Dispute?
+  messages          Message[]
+  ratings           Rating[]
+}
+
+model WalletTransaction {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id])
+  amount    Decimal     @db.Decimal(10, 2)
+  currency  String
+  state     WalletState @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Dispute {
+  id          String        @id @default(cuid())
+  orderId     String        @unique
+  order       Order         @relation(fields: [orderId], references: [id])
+  raisedById  String
+  reason      String
+  status      DisputeStatus @default(OPEN)
+  resolution  String?
+  createdAt   DateTime      @default(now())
+  resolvedAt  DateTime?
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id])
+  senderId  String
+  sender    User     @relation("MessageSender", fields: [senderId], references: [id])
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+}
+
+model Rating {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  authorId    String
+  author      User     @relation("RatingAuthor", fields: [authorId], references: [id])
+  targetId    String
+  target      User     @relation("RatingTarget", fields: [targetId], references: [id])
+  score       Int      // 1-5
+  comment     String?
+  createdAt   DateTime @default(now())
+}
+
+model VerificationRecord {
+  id            String   @id @default(cuid())
+  userId        String
+  provider      String   // e.g. "veriff", "onfido"
+  providerRefId String
+  status        String   // pending/approved/rejected
+  createdAt     DateTime @default(now())
+}
+
+model AdminRoleAssignment {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  role      AdminRole
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, role])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id])
+  channel   NotificationChannel
+  title     String
+  body      String
+  read      Boolean             @default(false)
+  createdAt DateTime            @default(now())
+}
