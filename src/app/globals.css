@@ -12,11 +12,15 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/*
+ * The UI is built as a single light theme (components hardcode bg-white /
+ * text-gray-900 throughout). We intentionally pin color-scheme to light so a
+ * visitor's OS dark-mode preference doesn't flip the body background to black
+ * and leave dark text unreadable. A real dark theme would require restyling
+ * every component and is out of scope for launch.
+ */
+:root {
+  color-scheme: light;
 }
 
 body {

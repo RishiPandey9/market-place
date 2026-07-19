@@ -87,8 +87,8 @@ If asked to build one of these early, confirm with the project owner that priori
 _Update this section as phases complete._
 
 - [ ] Phase 0 — Discovery, legal, architecture
-- [ ] Phase 1 — Auth, listings, checkout/escrow, shipping, messaging
-- [ ] Phase 2 — Admin/RBAC, security, compliance
+- [x] Phase 1 — Auth, listings, checkout/escrow, shipping, messaging
+- [~] Phase 2 — Admin/RBAC, security, compliance (Admin/RBAC + KYC/withdrawal gate done; 2FA, live security hardening pending)
 - [ ] Phase 3 — Testing, QA, launch hardening
 - [ ] Phase 4 — AI features
 - [ ] Phase 5 — Scale

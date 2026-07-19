@@ -59,7 +59,7 @@
 ### 1.2 Verification tiers
 - [ ] Level 1: Email + phone OTP verification (required to browse/buy)
 - [ ] Level 2: Payout method connected + profile complete (required to sell)
-- [ ] Level 3: Government-ID scan + selfie/liveness via KYC provider (required to withdraw)
+- [x] Level 3: Government-ID scan + selfie/liveness via KYC provider (required to withdraw) — sandbox-gated; live provider TBD
 - [ ] Visible trust badges (email, phone, ID, payment verified)
 - [ ] Selling/withdrawal limits tied to verification tier
 
@@ -114,7 +114,7 @@
 - [ ] Order state machine: paid → shipped → delivered → released
 - [ ] Wallet states: pending, available, withdrawn, frozen (dispute)
 - [ ] Auto-confirm timer post-delivery (configurable window)
-- [ ] Withdrawal flow to verified bank account (gated by KYC + 2FA)
+- [x] Withdrawal flow to verified bank account (gated by KYC) — sandbox payout; 2FA + real Stripe payout TBD before launch
 - [ ] Transaction history view
 
 ### 1.9 Shipping & fulfilment

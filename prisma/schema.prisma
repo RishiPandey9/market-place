@@ -89,6 +89,8 @@ model User {
   stripeAccountId     String?            // Stripe Connect account id (seller payouts)
   stripeCustomerId    String?            // Stripe customer id (buyer payments)
   twoFactorEnabled    Boolean            @default(false)
+  suspended           Boolean            @default(false) // admin trust-and-safety suspension (Phase 2)
+  suspendedAt         DateTime?
   country             String?
   currency            String?
   language            String?

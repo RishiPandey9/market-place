@@ -98,6 +98,8 @@ model User {
   stripeAccountId     String?            // Stripe Connect account id (seller payouts)
   stripeCustomerId    String?            // Stripe customer id (buyer payments)
   twoFactorEnabled    Boolean            @default(false)
+  suspended           Boolean            @default(false)
+  suspendedAt         DateTime?
   country             String?
   currency             String?
   language             String?
@@ -415,6 +417,7 @@ DEFAULT_COUNTRY=
     /orders/[id]/ship/route.ts
     /orders/[id]/confirm/route.ts
     /wallet/withdraw/route.ts
+    /verification/route.ts
     /messages/route.ts
     /disputes/route.ts
     /webhooks/stripe/route.ts
@@ -472,9 +475,14 @@ DEFAULT_COUNTRY=
 | GET | `/api/orders/[id]` | Order detail + tracking |
 | POST | `/api/orders/[id]/ship` | Seller marks shipped, generates label |
 | POST | `/api/orders/[id]/confirm` | Buyer confirms delivery |
-| POST | `/api/wallet/withdraw` | Request payout to bank |
+| POST | `/api/wallet/withdraw` | Request payout to bank. KYC-gated (Level 3). Money-critical. |
+| POST | `/api/verification` | Start KYC (Level 3) identity verification for the signed-in user; returns provider redirect. |
 | POST | `/api/messages` | Send message |
 | POST | `/api/disputes` | Raise a dispute |
+| POST | `/api/admin/disputes/[id]/resolve` | Admin resolves a dispute (refund or release escrow). RBAC: `disputes.resolve`. Money-critical. |
+| PATCH | `/api/admin/listings/[id]` | Admin moderates a listing (approve/reject/hide). RBAC: `listings.moderate`. |
+| PATCH | `/api/admin/users/[id]` | Admin suspends/reactivates a user. RBAC: `users.manage`. |
+| POST | `/api/admin/roles` | Admin assigns/revokes an admin role. RBAC: `roles.manage`. |
 | POST | `/api/webhooks/stripe` | Stripe event handler (payment, payout events) |
 | POST | `/api/webhooks/shipping` | Carrier tracking event handler |
 | POST | `/api/webhooks/kyc` | KYC provider verification result handler |

@@ -61,6 +61,11 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Suspended accounts (admin trust-and-safety action) cannot sign in.
+        if (user.suspended) {
+          return null;
+        }
+
         // Only non-sensitive fields — never the password hash.
         return {
           id: user.id,
