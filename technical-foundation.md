@@ -115,6 +115,7 @@ model User {
   ratingsGiven        Rating[]           @relation("RatingAuthor")
   ratingsReceived     Rating[]           @relation("RatingTarget")
   notifications       Notification[]
+  notificationPreference NotificationPreference?
   adminRoles          AdminRoleAssignment[]
   auditLogs           AuditLog[]
 }
@@ -305,6 +306,20 @@ model Notification {
   read      Boolean             @default(false)
   createdAt DateTime            @default(now())
 }
+
+model NotificationPreference {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id])
+  emailOrders       Boolean  @default(true)
+  emailMessages     Boolean  @default(true)
+  emailMarketing    Boolean  @default(false)
+  pushOrders        Boolean  @default(true)
+  pushMessages      Boolean  @default(true)
+  pushMarketing     Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
 ```
 
 ---
@@ -478,6 +493,11 @@ DEFAULT_COUNTRY=
 | POST | `/api/orders/[id]/ship` | Seller marks shipped, generates label |
 | POST | `/api/orders/[id]/confirm` | Buyer confirms delivery |
 | POST | `/api/wallet/withdraw` | Request payout to bank. KYC-gated (Level 3). Money-critical. |
+| PATCH | `/api/settings/profile` | Update signed-in user's contact + locale fields. Owner-scoped. |
+| POST | `/api/settings/password` | Change password (bcrypt verify current + hash new). Rate-limited, audited. |
+| GET/POST | `/api/settings/addresses` | List / add the user's addresses. Owner-scoped. |
+| PATCH/DELETE | `/api/settings/addresses/[id]` | Edit / remove an address (default-address handling). Owner-scoped. |
+| GET/PATCH | `/api/settings/notifications` | Read / upsert notification preferences. Owner-scoped. |
 | POST | `/api/verification` | Start KYC (Level 3) identity verification for the signed-in user; returns provider redirect. |
 | POST | `/api/messages` | Send message |
 | POST | `/api/disputes` | Raise a dispute |

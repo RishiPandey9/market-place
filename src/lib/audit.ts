@@ -27,6 +27,10 @@ export type KnownAuditAction =
   | "dispute_rate_limited"
   // orders
   | "order_confirmed"
+  // account settings
+  | "profile_updated"
+  | "password_changed"
+  | "password_change_failed"
   // admin
   | "user_suspended"
   | "user_reactivated"

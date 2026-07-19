@@ -257,3 +257,98 @@ export const withdrawSchema = z.object({
 });
 
 export type WithdrawInput = z.infer<typeof withdrawSchema>;
+
+// ==============================
+// Account settings (Phase 3.2)
+// ==============================
+// Profile: contact + locale fields on the User model. All optional so a user can
+// update one field at a time; empty strings clear the nullable columns. `phone`
+// is loosely validated here (E.164-ish) — real phone OTP verification is Phase 1.2.
+export const updateProfileSchema = z
+  .object({
+    phone: z
+      .string()
+      .trim()
+      .regex(/^\+?[0-9\s-]{6,20}$/, "Enter a valid phone number")
+      .optional()
+      .or(z.literal("")),
+    country: z
+      .string()
+      .trim()
+      .length(2, "Use a 2-letter country code")
+      .toUpperCase()
+      .optional()
+      .or(z.literal("")),
+    currency: z
+      .string()
+      .trim()
+      .length(3, "Use a 3-letter currency code")
+      .toUpperCase()
+      .optional()
+      .or(z.literal("")),
+    language: z
+      .string()
+      .trim()
+      .max(10, "Language code is too long")
+      .optional()
+      .or(z.literal("")),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "No fields to update",
+  });
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+// Password change: verify the current password server-side, then set a new one
+// that meets the shared strength rules. `newPassword` must differ from current.
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Enter your current password"),
+    newPassword: passwordSchema,
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: "New password must be different from the current one",
+    path: ["newPassword"],
+  });
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+// Address book: reuse the shipping address shape and add an isDefault flag.
+export const createAddressSchema = shippingAddressSchema.extend({
+  isDefault: z.boolean().optional().default(false),
+});
+
+export const updateAddressSchema = z
+  .object({
+    line1: shippingAddressSchema.shape.line1.optional(),
+    line2: shippingAddressSchema.shape.line2,
+    city: shippingAddressSchema.shape.city.optional(),
+    postalCode: shippingAddressSchema.shape.postalCode.optional(),
+    country: shippingAddressSchema.shape.country.optional(),
+    isDefault: z.boolean().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "No fields to update",
+  });
+
+export type CreateAddressInput = z.infer<typeof createAddressSchema>;
+export type UpdateAddressInput = z.infer<typeof updateAddressSchema>;
+
+// Notification preferences: coarse per-channel opt-ins. All optional so a single
+// toggle can be flipped; the route upserts the row with defaults for the rest.
+export const notificationPreferencesSchema = z
+  .object({
+    emailOrders: z.boolean().optional(),
+    emailMessages: z.boolean().optional(),
+    emailMarketing: z.boolean().optional(),
+    pushOrders: z.boolean().optional(),
+    pushMessages: z.boolean().optional(),
+    pushMarketing: z.boolean().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "No preferences to update",
+  });
+
+export type NotificationPreferencesInput = z.infer<
+  typeof notificationPreferencesSchema
+>;

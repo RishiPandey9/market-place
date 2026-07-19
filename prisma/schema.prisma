@@ -106,6 +106,7 @@ model User {
   ratingsGiven        Rating[]           @relation("RatingAuthor")
   ratingsReceived     Rating[]           @relation("RatingTarget")
   notifications       Notification[]
+  notificationPreference NotificationPreference?
   adminRoles          AdminRoleAssignment[]
   auditLogs           AuditLog[]
 }
@@ -295,4 +296,21 @@ model Notification {
   body      String
   read      Boolean             @default(false)
   createdAt DateTime            @default(now())
+}
+
+// Per-user notification opt-ins (Phase 3.2). One row per user; each channel is
+// a coarse on/off toggle per event category. Absence of a row = defaults (all
+// transactional on, marketing off), created lazily on first save.
+model NotificationPreference {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id])
+  emailOrders       Boolean  @default(true)
+  emailMessages     Boolean  @default(true)
+  emailMarketing    Boolean  @default(false)
+  pushOrders        Boolean  @default(true)
+  pushMessages      Boolean  @default(true)
+  pushMarketing     Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }

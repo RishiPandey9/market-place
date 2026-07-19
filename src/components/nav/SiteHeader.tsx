@@ -65,6 +65,12 @@ export async function SiteHeader() {
               >
                 Wallet
               </Link>
+              <Link
+                href="/settings/profile"
+                className="font-medium text-gray-600 hover:text-gray-900"
+              >
+                Settings
+              </Link>
               {isAdmin && (
                 <Link
                   href="/admin/dashboard"

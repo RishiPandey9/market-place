@@ -197,11 +197,11 @@
 - [ ] Security review / penetration test (at least a scoped one)
 
 ### 3.2 Supporting pages
-- [ ] Legal pages: terms, privacy, tax info
-- [ ] Help/support + FAQ + ticket system
-- [ ] Notification preferences (email/push)
+- [x] Legal pages: terms, privacy, tax info — placeholder copy, flagged pending legal review
+- [~] Help/support + FAQ + ticket system — FAQ page live; ticket system deferred
+- [x] Notification preferences (email/push) — NotificationPreference model + settings tab; delivery wiring deferred to email/SMS service
 - [ ] Referral program
-- [ ] Account settings: profile, addresses, payment methods, security, language/region
+- [x] Account settings: profile, addresses, payment methods, security, language/region — profile/addresses/security(password)/notifications live; payment methods via Stripe onboarding (existing)
 
 ### 3.3 Soft launch
 - [ ] Limited user group onboarded
