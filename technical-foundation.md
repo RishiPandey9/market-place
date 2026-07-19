@@ -437,6 +437,8 @@ DEFAULT_COUNTRY=
   /email.ts
   /sms.ts
   /rbac.ts                      → permission checks per AdminRole
+  /ratelimit.ts                 → in-memory sliding-window rate limiter (INTERIM: swap for Redis before multi-instance launch)
+  /audit.ts                     → recordAudit() + clientIp() for AuditLog writes
 
 /components
   /ui/                          → shared buttons, inputs, modals
@@ -494,6 +496,7 @@ DEFAULT_COUNTRY=
 - Webhook routes (`/api/webhooks/*`) must verify signatures and be idempotent — no exceptions.
 - Keep `/lib` files as the only place external SDKs (Stripe, Cloudinary, etc.) are initialized — don't instantiate clients inside route handlers.
 - RBAC checks (`/lib/rbac.ts`) must gate every `/admin` route and API handler that touches user/order/listing data at the admin level.
+- Global security headers (CSP, HSTS, X-Frame-Options, etc.) are applied in `src/middleware.ts` to all non-static routes. Rate limiting lives per-route in the handlers via `/lib/ratelimit.ts` (Edge middleware can't reach our Prisma identity keys). Sensitive actions are audited via `/lib/audit.ts` (`recordAudit`) — never put secrets/passwords in audit metadata.
 
 ---
 

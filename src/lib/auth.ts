@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/db";
 import { emailSchema } from "@/lib/validation";
+import { recordAudit } from "@/lib/audit";
 
 // NextAuth (Auth.js) configuration.
 //
@@ -50,6 +51,11 @@ export const authOptions: NextAuthOptions = {
 
         // Reject if the user has no local password (e.g. Google-only account).
         if (!user?.passwordHash) {
+          await recordAudit({
+            action: "auth_login_failed",
+            userId: user?.id ?? null,
+            metadata: { email: parsedEmail.data, reason: "no_password" },
+          });
           return null;
         }
 
@@ -58,13 +64,25 @@ export const authOptions: NextAuthOptions = {
           user.passwordHash
         );
         if (!valid) {
+          await recordAudit({
+            action: "auth_login_failed",
+            userId: user.id,
+            metadata: { email: parsedEmail.data, reason: "bad_password" },
+          });
           return null;
         }
 
         // Suspended accounts (admin trust-and-safety action) cannot sign in.
         if (user.suspended) {
+          await recordAudit({
+            action: "auth_login_failed",
+            userId: user.id,
+            metadata: { email: parsedEmail.data, reason: "suspended" },
+          });
           return null;
         }
+
+        await recordAudit({ action: "auth_login_success", userId: user.id });
 
         // Only non-sensitive fields — never the password hash.
         return {

@@ -10,6 +10,8 @@ import {
   canWalletTransition,
 } from "@/lib/escrow";
 import { isKycSandbox } from "@/lib/kyc";
+import { rateLimit, rateLimitHeaders, RATE_LIMITS } from "@/lib/ratelimit";
+import { recordAudit } from "@/lib/audit";
 import { WalletState, Prisma } from "@prisma/client";
 
 // POST /api/wallet/withdraw — Seller requests a payout of cleared escrow (Phase 2).
@@ -32,6 +34,19 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  // Money-movement abuse guard: cap withdrawal attempts per user.
+  const limit = rateLimit(`withdraw:${session.user.id}`, RATE_LIMITS.withdraw);
+  if (!limit.ok) {
+    await recordAudit({
+      action: "withdraw_rate_limited",
+      userId: session.user.id,
+    });
+    return NextResponse.json(
+      { error: "Too many withdrawal attempts. Please try again later." },
+      { status: 429, headers: rateLimitHeaders(limit) },
+    );
   }
 
   let body: unknown;

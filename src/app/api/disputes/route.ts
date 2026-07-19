@@ -5,6 +5,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { canTransition, canWalletTransition } from "@/lib/escrow";
 import { createDisputeSchema } from "@/lib/validation";
+import { rateLimit, rateLimitHeaders, RATE_LIMITS } from "@/lib/ratelimit";
+import { recordAudit } from "@/lib/audit";
 import { OrderStatus, WalletState, type Prisma } from "@prisma/client";
 
 // POST /api/disputes — Raise a dispute (Phase 1.10).
@@ -20,6 +22,19 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  // Abuse guard: cap dispute creation per user.
+  const limit = rateLimit(`dispute:${session.user.id}`, RATE_LIMITS.dispute);
+  if (!limit.ok) {
+    await recordAudit({
+      action: "dispute_rate_limited",
+      userId: session.user.id,
+    });
+    return NextResponse.json(
+      { error: "Too many disputes raised. Please try again later." },
+      { status: 429, headers: rateLimitHeaders(limit) },
+    );
   }
 
   let body: unknown;

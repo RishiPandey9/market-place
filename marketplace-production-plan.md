@@ -69,7 +69,7 @@
 - [ ] Password strength rules enforced
 - [ ] Two-factor authentication (2FA) for login and withdrawals
 - [ ] Session management: device tracking, remote logout, suspicious-login detection
-- [ ] Audit log of auth events
+- [x] Audit log of auth events — login success/failure (with reason), registration, and rate-limit hits recorded via recordAudit()
 
 ---
 
@@ -165,16 +165,16 @@
 ## PHASE 2 — Security & Compliance
 
 ### 2.3 Security architecture (per SOW Section 10)
-- [ ] TLS/HTTPS everywhere, certificate management
+- [x] TLS/HTTPS everywhere, certificate management — HSTS (max-age 2y, preload) via middleware; TLS/cert termination handled by Vercel at deploy
 - [ ] Encrypted database storage + encrypted backups
 - [ ] Secrets in vault, never in code
 - [ ] PCI-DSS compliance via payment provider (no raw card storage)
-- [ ] Input validation, SQLi/XSS/CSRF protection
-- [ ] Rate limiting, bot/abuse protection
+- [x] Input validation, SQLi/XSS/CSRF protection — zod validation on all mutating routes; Prisma parameterizes queries; CSP + security headers via middleware
+- [x] Rate limiting, bot/abuse protection — per-IP/user sliding-window limiter on auth/register/withdraw/dispute (INTERIM: in-memory; Redis before multi-instance)
 - [ ] Fraud prevention: duplicate/stolen-photo detection, velocity checks
 - [ ] Firewalls, DDoS protection
 - [ ] Isolated dev/staging/prod environments
-- [ ] Audit logging across sensitive actions
+- [x] Audit logging across sensitive actions — recordAudit() writes AuditLog rows for auth (login/register/rate-limit), money (withdraw), disputes, admin actions, KYC
 - [ ] Automated security patching
 - [ ] Monitoring: error tracking, uptime, alerting, tested backup/restore
 
