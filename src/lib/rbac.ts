@@ -28,6 +28,10 @@ export type Permission =
   | "verification.review" // approve / reject KYC
   | "support.read" // view support tickets
   | "support.manage" // reply to / change status of tickets
+  | "marketing.read" // view marketing campaigns / promotions
+  | "marketing.manage" // create / edit / activate campaigns
+  | "cms.read" // view CMS / SEO content pages
+  | "cms.manage" // create / edit / publish content pages
   | "roles.manage" // assign/revoke admin roles
   | "analytics.read";
 
@@ -47,6 +51,10 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "verification.review",
     "support.read",
     "support.manage",
+    "marketing.read",
+    "marketing.manage",
+    "cms.read",
+    "cms.manage",
     "roles.manage",
     "analytics.read",
   ],
@@ -61,6 +69,8 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "verification.read",
     "support.read",
     "support.manage",
+    "marketing.read",
+    "cms.read",
     "analytics.read",
   ],
   [AdminRole.LISTING_VERIFICATION_OFFICER]: [
@@ -91,8 +101,18 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "disputes.read",
     "disputes.resolve",
   ],
-  [AdminRole.MARKETING]: ["admin.access", "analytics.read"],
-  [AdminRole.SEO_CONTENT]: ["admin.access", "listings.read"],
+  [AdminRole.MARKETING]: [
+    "admin.access",
+    "marketing.read",
+    "marketing.manage",
+    "analytics.read",
+  ],
+  [AdminRole.SEO_CONTENT]: [
+    "admin.access",
+    "listings.read",
+    "cms.read",
+    "cms.manage",
+  ],
   [AdminRole.FINANCE]: [
     "admin.access",
     "orders.read",

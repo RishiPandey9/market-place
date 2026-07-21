@@ -682,6 +682,10 @@ DEFAULT_COUNTRY=
 | POST | `/api/admin/roles` | Admin assigns/revokes an admin role. RBAC: `roles.manage`. |
 | GET | `/api/admin/support/tickets` | Support queue (OPEN+PENDING or ?status=). RBAC: `support.read`. (Phase 3.3) |
 | GET/POST/PATCH | `/api/admin/support/tickets/[id]` | Read thread / agent reply / change status (resolve/close/reopen). RBAC: `support.read` (GET), `support.manage` (POST/PATCH). |
+| GET/POST | `/api/admin/marketing` | List marketing campaigns / create a campaign (BANNER/FEATURED/EMAIL). RBAC: `marketing.read` (GET), `marketing.manage` (POST). Audit-logged. |
+| PATCH/DELETE | `/api/admin/marketing/[id]` | Edit a campaign / toggle live / delete. RBAC: `marketing.manage`. Audit-logged. |
+| GET/POST | `/api/admin/cms` | List content pages / create a page or blog post with SEO fields. RBAC: `cms.read` (GET), `cms.manage` (POST). Slug unique. Audit-logged. |
+| PATCH/DELETE | `/api/admin/cms/[id]` | Edit a page / change status (draft/publish/archive) / delete. RBAC: `cms.manage`. Slug immutable. Audit-logged. |
 | POST | `/api/webhooks/stripe` | Stripe event handler (payment, payout events) |
 | POST | `/api/webhooks/shipping` | Carrier tracking event handler |
 | POST | `/api/webhooks/kyc` | KYC provider verification result handler |
