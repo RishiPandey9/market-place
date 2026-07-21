@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const inputClass =
-  "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900";
+  "mt-1 block w-full rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30";
 
 // Password change form (Phase 3.2). Posts to /api/settings/password, which
 // verifies the current password with bcrypt before setting the new hash. No
@@ -44,9 +44,9 @@ export function ChangePasswordForm() {
 
   if (done) {
     return (
-      <div className="max-w-md rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
+      <div className="max-w-md rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
         <p className="font-medium">Password changed.</p>
-        <p className="mt-1 text-green-700">
+        <p className="mt-1 text-emerald-700">
           Your new password is active. Use it next time you sign in.
         </p>
       </div>
@@ -56,7 +56,7 @@ export function ChangePasswordForm() {
   return (
     <form onSubmit={(e) => e.preventDefault()} className="max-w-md space-y-5">
       <div>
-        <label className="text-sm font-medium text-gray-700">Current password</label>
+        <label className="text-sm font-medium text-ink">Current password</label>
         <input
           type="password"
           value={currentPassword}
@@ -66,7 +66,7 @@ export function ChangePasswordForm() {
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-gray-700">New password</label>
+        <label className="text-sm font-medium text-ink">New password</label>
         <input
           type="password"
           value={newPassword}
@@ -75,19 +75,19 @@ export function ChangePasswordForm() {
           className={inputClass}
         />
         {fieldErrors.newPassword?.[0] && (
-          <p className="mt-1 text-xs text-red-600">{fieldErrors.newPassword[0]}</p>
+          <p className="mt-1 text-xs text-rose-600">{fieldErrors.newPassword[0]}</p>
         )}
-        <p className="mt-1 text-xs text-gray-400">
+        <p className="mt-1 text-xs text-ink-soft">
           At least 8 characters, with upper, lower, and a number.
         </p>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
       <button
         onClick={submit}
         disabled={loading || !currentPassword || !newPassword}
-        className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
       >
         {loading ? "Saving…" : "Change password"}
       </button>

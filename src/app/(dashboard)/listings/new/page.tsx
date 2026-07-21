@@ -16,12 +16,12 @@ export default async function NewListingPage() {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">
           New listing
         </h1>
         <Link
           href="/my-listings"
-          className="text-sm font-medium text-gray-500 underline"
+          className="text-sm font-medium text-ink-soft underline"
         >
           My listings
         </Link>

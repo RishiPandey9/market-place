@@ -19,6 +19,9 @@ export type KnownAuditAction =
   | "auth_login_failed"
   | "auth_register"
   | "auth_rate_limited"
+  | "auth_new_device_login"
+  | "session_revoked"
+  | "session_revoked_others"
   // money
   | "wallet_withdraw"
   | "withdraw_rate_limited"
@@ -27,6 +30,36 @@ export type KnownAuditAction =
   | "dispute_rate_limited"
   // orders
   | "order_confirmed"
+  // referral
+  | "referral_signup"
+  // support
+  | "support_ticket_opened"
+  | "support_ticket_reply"
+  | "support_ticket_status_changed"
+  // social
+  | "seller_followed"
+  | "seller_unfollowed"
+  // payout / payment instruments
+  | "bank_account_added"
+  | "bank_account_removed"
+  | "payment_method_added"
+  | "payment_method_removed"
+  // offers & bundles
+  | "offer_created"
+  | "offer_accepted"
+  | "offer_declined"
+  | "offer_countered"
+  | "offer_withdrawn"
+  | "bundle_created"
+  // promotions & marketing
+  | "listing_promoted"
+  | "campaign_created"
+  | "campaign_updated"
+  | "campaign_deleted"
+  // cms
+  | "content_created"
+  | "content_updated"
+  | "content_deleted"
   // account settings
   | "profile_updated"
   | "password_changed"

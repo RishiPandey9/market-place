@@ -11,7 +11,7 @@ type Profile = {
 };
 
 const inputClass =
-  "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900";
+  "mt-1 block w-full rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30";
 
 // Profile settings form (Phase 3.2). Edits contact + locale fields on the User
 // row via PATCH /api/settings/profile. Email is shown read-only — changing it
@@ -63,15 +63,15 @@ export function ProfileForm({
   return (
     <form onSubmit={(e) => e.preventDefault()} className="max-w-md space-y-5">
       <div>
-        <label className="text-sm font-medium text-gray-700">Email</label>
-        <input value={email} disabled className={`${inputClass} bg-gray-50 text-gray-500`} />
-        <p className="mt-1 text-xs text-gray-400">
+        <label className="text-sm font-medium text-ink">Email</label>
+        <input value={email} disabled className={`${inputClass} bg-brand-50 text-ink-soft`} />
+        <p className="mt-1 text-xs text-ink-soft">
           Email changes require re-verification and aren&apos;t available here yet.
         </p>
       </div>
 
       <div>
-        <label className="text-sm font-medium text-gray-700">Phone</label>
+        <label className="text-sm font-medium text-ink">Phone</label>
         <input
           value={form.phone}
           onChange={(e) => set("phone", e.target.value)}
@@ -79,13 +79,13 @@ export function ProfileForm({
           className={inputClass}
         />
         {fieldErrors.phone?.[0] && (
-          <p className="mt-1 text-xs text-red-600">{fieldErrors.phone[0]}</p>
+          <p className="mt-1 text-xs text-rose-600">{fieldErrors.phone[0]}</p>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium text-gray-700">Country</label>
+          <label className="text-sm font-medium text-ink">Country</label>
           <input
             value={form.country}
             onChange={(e) => set("country", e.target.value)}
@@ -94,11 +94,11 @@ export function ProfileForm({
             className={inputClass}
           />
           {fieldErrors.country?.[0] && (
-            <p className="mt-1 text-xs text-red-600">{fieldErrors.country[0]}</p>
+            <p className="mt-1 text-xs text-rose-600">{fieldErrors.country[0]}</p>
           )}
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700">Currency</label>
+          <label className="text-sm font-medium text-ink">Currency</label>
           <input
             value={form.currency}
             onChange={(e) => set("currency", e.target.value)}
@@ -107,13 +107,13 @@ export function ProfileForm({
             className={inputClass}
           />
           {fieldErrors.currency?.[0] && (
-            <p className="mt-1 text-xs text-red-600">{fieldErrors.currency[0]}</p>
+            <p className="mt-1 text-xs text-rose-600">{fieldErrors.currency[0]}</p>
           )}
         </div>
       </div>
 
       <div>
-        <label className="text-sm font-medium text-gray-700">Language</label>
+        <label className="text-sm font-medium text-ink">Language</label>
         <input
           value={form.language}
           onChange={(e) => set("language", e.target.value)}
@@ -122,17 +122,17 @@ export function ProfileForm({
           className={inputClass}
         />
         {fieldErrors.language?.[0] && (
-          <p className="mt-1 text-xs text-red-600">{fieldErrors.language[0]}</p>
+          <p className="mt-1 text-xs text-rose-600">{fieldErrors.language[0]}</p>
         )}
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {saved && <p className="text-sm text-green-700">Profile saved.</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
+      {saved && <p className="text-sm text-emerald-600">Profile saved.</p>}
 
       <button
         onClick={submit}
         disabled={loading}
-        className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
       >
         {loading ? "Saving…" : "Save changes"}
       </button>

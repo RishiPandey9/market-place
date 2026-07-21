@@ -53,12 +53,12 @@ export function WithdrawForm({
 
   if (done) {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
         <p className="font-medium">
           {fmt(done.withdrawn, currency)} withdrawal requested.
         </p>
         {done.sandbox && (
-          <p className="mt-1 text-green-700">
+          <p className="mt-1 text-emerald-700">
             Sandbox mode: no real bank transfer was made. Wire Stripe Connect
             payouts before launch.
           </p>
@@ -68,16 +68,16 @@ export function WithdrawForm({
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-5">
+    <div className="rounded-2xl border border-brand-100 bg-white p-5">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500">Available to withdraw</span>
-        <span className="text-lg font-semibold text-gray-900">
+        <span className="text-sm text-ink-soft">Available to withdraw</span>
+        <span className="text-lg font-semibold text-ink">
           {fmt(available, currency)}
         </span>
       </div>
 
       {nothingToWithdraw ? (
-        <p className="mt-4 text-sm text-gray-500">
+        <p className="mt-4 text-sm text-ink-soft">
           You have no cleared balance to withdraw yet. Funds become available
           once a buyer confirms delivery.
         </p>
@@ -85,13 +85,13 @@ export function WithdrawForm({
         <button
           onClick={submit}
           disabled={loading}
-          className="mt-5 w-full rounded-md bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+          className="mt-5 w-full rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
         >
           {loading ? "Processing…" : `Withdraw ${fmt(available, currency)}`}
         </button>
       )}
 
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
     </div>
   );
 }

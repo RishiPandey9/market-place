@@ -44,21 +44,21 @@ export function ResolveDisputeControl({ disputeId }: { disputeId: string }) {
         onChange={(e) => setNote(e.target.value)}
         rows={2}
         placeholder="Resolution note (optional)…"
-        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+        className="w-full rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
       <div className="flex gap-2">
         <button
           onClick={() => resolve("refund")}
           disabled={busy !== null}
-          className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+          className="rounded-xl bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-50"
         >
           {busy === "refund" ? "Refunding…" : "Refund buyer"}
         </button>
         <button
           onClick={() => resolve("release")}
           disabled={busy !== null}
-          className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+          className="rounded-xl bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
         >
           {busy === "release" ? "Releasing…" : "Release to seller"}
         </button>

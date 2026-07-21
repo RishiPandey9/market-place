@@ -1,4 +1,4 @@
-import { OrderStatus, WalletState, VerificationLevel } from "@prisma/client";
+import { OrderStatus, WalletState, VerificationLevel, WithdrawalStatus } from "@prisma/client";
 
 // ==============================================================
 // Escrow & pricing core (Phase 1.7 / 1.8) — money-critical.
@@ -165,4 +165,13 @@ export function checkWithdrawalEligibility(params: {
     return { ok: false, reason: "insufficient_available", availableBalance: available };
   }
   return { ok: true, availableBalance: available };
+}
+
+// Initial status for a newly recorded Withdrawal row. In sandbox (no real
+// payment provider wired) the escrow release is immediate, so the row is PAID.
+// In production the row starts REQUESTED and is advanced by the Stripe payout
+// webhook (REQUESTED → PROCESSING → PAID / FAILED). Pure so it is unit-testable
+// per CLAUDE.md #7.
+export function initialWithdrawalStatus(sandbox: boolean): WithdrawalStatus {
+  return sandbox ? WithdrawalStatus.PAID : WithdrawalStatus.REQUESTED;
 }

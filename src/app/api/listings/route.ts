@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createListingSchema } from "@/lib/validation";
+import { checkCanPublish } from "@/lib/trust";
+import { ListingStatus } from "@prisma/client";
 
 // Optional string fields arrive as "" from the form; store them as null.
 function emptyToNull(value: string | undefined): string | null {
@@ -61,6 +63,41 @@ export async function POST(req: Request) {
   });
   if (!category) {
     return NextResponse.json({ error: "Category not found" }, { status: 400 });
+  }
+
+  // Verification-tier selling limit (SOW 1.2): only enforced when the seller is
+  // publishing straight to ACTIVE. Saving a DRAFT never consumes tier capacity.
+  if (data.status === "ACTIVE") {
+    const [seller, activeCount] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { verificationLevel: true },
+      }),
+      prisma.listing.count({
+        where: { sellerId: session.user.id, status: ListingStatus.ACTIVE },
+      }),
+    ]);
+    if (!seller) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    const check = checkCanPublish({
+      level: seller.verificationLevel,
+      currentActiveCount: activeCount,
+      price: data.price,
+    });
+    if (!check.ok) {
+      return NextResponse.json(
+        {
+          error:
+            check.reason === "price_exceeds_tier"
+              ? `Items over ${check.limit} require a higher verification level. Verify your identity to list higher-value items.`
+              : `You've reached your active-listing limit (${check.limit}) for your verification level. Verify your identity to list more.`,
+          reason: check.reason,
+          limit: check.limit,
+        },
+        { status: 403 },
+      );
+    }
   }
 
   const listing = await prisma.listing.create({

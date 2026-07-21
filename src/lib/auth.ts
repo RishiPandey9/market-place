@@ -6,6 +6,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { emailSchema } from "@/lib/validation";
 import { recordAudit } from "@/lib/audit";
+import {
+  startSession,
+  isSessionActive,
+  requestFingerprint,
+} from "@/lib/session";
 
 // NextAuth (Auth.js) configuration.
 //
@@ -25,7 +30,14 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    // Short-lived access token; NextAuth rotates the JWT on activity.
+    // Refresh-token rotation (Phase 3.3 checklist): satisfied by NextAuth's
+    // rolling JWT rather than a separate refresh-token table. The signed session
+    // token is short-lived (maxAge 1h) and is re-issued — a fresh `exp` and a
+    // re-run of the jwt() callback — on activity, at most once per updateAge
+    // window (15m). Because the jwt() callback re-validates the session `sid`
+    // against the UserSession table on every rotation, a revoked device stops
+    // getting refreshed tokens and its access dies within a rotation window.
+    // There is no long-lived refresh secret to steal/replay.
     maxAge: 60 * 60, // 1 hour
     updateAge: 15 * 60, // refresh the token at most every 15 minutes
   },
@@ -39,7 +51,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         const parsedEmail = emailSchema.safeParse(credentials?.email);
         if (!parsedEmail.success || !credentials?.password) {
           return null;
@@ -84,11 +96,23 @@ export const authOptions: NextAuthOptions = {
 
         await recordAudit({ action: "auth_login_success", userId: user.id });
 
+        // Open a tracked session for this device (Phase 1.3). The row id becomes
+        // the JWT `sid`, enabling remote logout + suspicious-login detection.
+        const fingerprint = requestFingerprint(
+          req?.headers as Record<string, string> | undefined,
+        );
+        const sid = await startSession({
+          userId: user.id,
+          ip: fingerprint.ip,
+          userAgent: fingerprint.userAgent,
+        });
+
         // Only non-sensitive fields — never the password hash.
         return {
           id: user.id,
           email: user.email,
           verificationLevel: user.verificationLevel,
+          sid,
         };
       },
     }),
@@ -131,6 +155,33 @@ export const authOptions: NextAuthOptions = {
           token.uid = dbUser.id;
           token.verificationLevel = dbUser.verificationLevel;
         }
+        // Credentials sign-in supplies the sid we created in authorize().
+        // Google sign-in has no sid yet — open a tracked session now. (Device
+        // fingerprint isn't available in this callback for OAuth, so it's
+        // recorded without IP/UA; the row still enables remote logout.)
+        const sidFromUser = (user as { sid?: string }).sid;
+        if (sidFromUser) {
+          token.sid = sidFromUser;
+        } else if (dbUser) {
+          token.sid = await startSession({
+            userId: dbUser.id,
+            ip: null,
+            userAgent: null,
+          });
+        }
+        return token;
+      }
+
+      // Subsequent requests: validate the tracked session so remote logout /
+      // suspicious-login revocation takes effect. A revoked or missing session
+      // clears the identity, which NextAuth treats as an unauthenticated token.
+      if (token.sid) {
+        const active = await isSessionActive(token.sid as string);
+        if (!active) {
+          delete token.uid;
+          delete token.sid;
+          delete token.verificationLevel;
+        }
       }
       return token;
     },
@@ -138,6 +189,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.uid as string;
         session.user.verificationLevel = token.verificationLevel as string;
+        session.user.sid = token.sid as string | undefined;
       }
       return session;
     },

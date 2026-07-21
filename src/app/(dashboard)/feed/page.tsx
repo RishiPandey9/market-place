@@ -26,26 +26,26 @@ export default async function FeedPage() {
     <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
       <div className="mb-8 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-ink">
             Your feed
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-ink-soft">
             The latest items from sellers in the community.
           </p>
         </div>
         <Link
           href="/listings/new"
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+          className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
         >
           Sell an item
         </Link>
       </div>
 
       {listings.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-300 py-16 text-center">
-          <p className="text-sm text-gray-500">
+        <div className="rounded-2xl border border-dashed border-brand-200 py-16 text-center">
+          <p className="text-sm text-ink-soft">
             No listings yet. Be the first to{" "}
-            <Link href="/listings/new" className="font-medium text-gray-900 underline">
+            <Link href="/listings/new" className="font-medium text-brand-700 underline hover:text-brand-800">
               list an item
             </Link>
             .

@@ -26,6 +26,8 @@ export type Permission =
   | "disputes.resolve" // refund or release escrow
   | "verification.read"
   | "verification.review" // approve / reject KYC
+  | "support.read" // view support tickets
+  | "support.manage" // reply to / change status of tickets
   | "roles.manage" // assign/revoke admin roles
   | "analytics.read";
 
@@ -43,6 +45,8 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "disputes.resolve",
     "verification.read",
     "verification.review",
+    "support.read",
+    "support.manage",
     "roles.manage",
     "analytics.read",
   ],
@@ -55,6 +59,8 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "disputes.read",
     "disputes.resolve",
     "verification.read",
+    "support.read",
+    "support.manage",
     "analytics.read",
   ],
   [AdminRole.LISTING_VERIFICATION_OFFICER]: [
@@ -72,6 +78,8 @@ const ROLE_PERMISSIONS: Record<AdminRole, Permission[]> = {
     "users.read",
     "orders.read",
     "disputes.read",
+    "support.read",
+    "support.manage",
   ],
   [AdminRole.TRUST_AND_SAFETY]: [
     "admin.access",

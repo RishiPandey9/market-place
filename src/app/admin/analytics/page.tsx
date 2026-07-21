@@ -33,17 +33,20 @@ export default async function AdminAnalyticsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">
         Analytics
       </h1>
+      <p className="mt-1 mb-6 text-sm text-ink-soft">
+        Core marketplace KPIs computed from live data.
+      </p>
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         {kpis.map((k) => (
           <div
             key={k.label}
-            className="rounded-lg border border-gray-200 bg-white p-5"
+            className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm"
           >
-            <p className="text-sm text-gray-500">{k.label}</p>
-            <p className="mt-2 text-2xl font-semibold text-gray-900">{k.value}</p>
+            <p className="text-sm text-ink-soft">{k.label}</p>
+            <p className="mt-2 text-2xl font-semibold text-ink">{k.value}</p>
           </div>
         ))}
       </div>

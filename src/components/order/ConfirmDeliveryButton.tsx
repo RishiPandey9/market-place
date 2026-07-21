@@ -30,11 +30,11 @@ export function ConfirmDeliveryButton({ orderId }: { orderId: string }) {
       <button
         onClick={confirm}
         disabled={busy}
-        className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
       >
         {busy ? "Confirming…" : "Confirm delivery"}
       </button>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
     </div>
   );
 }

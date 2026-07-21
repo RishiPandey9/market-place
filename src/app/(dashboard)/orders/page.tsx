@@ -39,29 +39,29 @@ export default async function OrdersPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10">
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-ink">
         My orders
       </h1>
 
       {orders.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-300 py-16 text-center">
-          <p className="text-sm text-gray-500">You haven&apos;t bought anything yet.</p>
+        <div className="rounded-2xl border border-dashed border-brand-200 py-16 text-center">
+          <p className="text-sm text-ink-soft">You haven&apos;t bought anything yet.</p>
         </div>
       ) : (
-        <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200">
+        <ul className="divide-y divide-brand-50 rounded-2xl border border-brand-100">
           {orders.map((o) => (
             <li key={o.id}>
               <Link
                 href={`/orders/${o.id}`}
-                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                className="flex items-center justify-between px-4 py-3 hover:bg-brand-50/60"
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{o.listing.title}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-medium text-ink">{o.listing.title}</p>
+                  <p className="text-xs text-ink-soft">
                     {fmt(o.totalPrice.toString(), o.currency)}
                   </p>
                 </div>
-                <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+                <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700">
                   {STATUS_LABEL[o.status] ?? o.status}
                 </span>
               </Link>

@@ -46,18 +46,18 @@ export function AssignRoleControl() {
   }
 
   return (
-    <div className="max-w-lg space-y-3 rounded-lg border border-gray-200 bg-white p-5">
+    <div className="max-w-lg space-y-3 rounded-2xl border border-brand-100 bg-white p-5">
       <input
         value={userId}
         onChange={(e) => setUserId(e.target.value)}
         placeholder="User ID"
-        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+        className="w-full rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
       />
       <div className="flex gap-2">
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="flex-1 rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
         >
           {ROLES.map((r) => (
             <option key={r} value={r}>
@@ -68,18 +68,18 @@ export function AssignRoleControl() {
         <select
           value={op}
           onChange={(e) => setOp(e.target.value as "assign" | "revoke")}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
         >
           <option value="assign">Assign</option>
           <option value="revoke">Revoke</option>
         </select>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {msg && <p className="text-sm text-green-700">{msg}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
+      {msg && <p className="text-sm text-emerald-700">{msg}</p>}
       <button
         onClick={submit}
         disabled={busy || !userId.trim()}
-        className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
       >
         {busy ? "Saving…" : "Apply"}
       </button>

@@ -39,15 +39,15 @@ export function SuspendUserControl({
       <button
         onClick={toggle}
         disabled={busy}
-        className={`rounded-md px-3 py-1.5 text-xs font-medium disabled:opacity-50 ${
+        className={`rounded-xl px-3 py-1.5 text-xs font-semibold text-white transition disabled:opacity-50 ${
           suspended
-            ? "bg-green-600 text-white hover:bg-green-700"
-            : "bg-red-600 text-white hover:bg-red-700"
+            ? "bg-brand-600 hover:bg-brand-700"
+            : "bg-rose-600 hover:bg-rose-700"
         }`}
       >
         {busy ? "…" : suspended ? "Reactivate" : "Suspend"}
       </button>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
     </div>
   );
 }

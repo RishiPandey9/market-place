@@ -12,7 +12,7 @@ const SORTS = [
 ];
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none";
+  "w-full rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30";
 
 // Client filter form for the search page. Reads current values from the URL,
 // pushes updates back into the query string (server component re-renders).
@@ -44,10 +44,10 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
   return (
     <form
       action={submit}
-      className="space-y-4 rounded-lg border border-gray-200 p-4"
+      className="space-y-4 rounded-2xl border border-brand-100 bg-white p-4"
     >
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">
+        <label className="mb-1 block text-xs font-medium text-ink-soft">
           Keyword
         </label>
         <input
@@ -60,7 +60,7 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
 
       {!params.get("categoryId") && (
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">
+          <label className="mb-1 block text-xs font-medium text-ink-soft">
             Category
           </label>
           <select
@@ -79,7 +79,7 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
       )}
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">
+        <label className="mb-1 block text-xs font-medium text-ink-soft">
           Brand
         </label>
         <input
@@ -91,7 +91,7 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">
+          <label className="mb-1 block text-xs font-medium text-ink-soft">
             Size
           </label>
           <input
@@ -101,7 +101,7 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">
+          <label className="mb-1 block text-xs font-medium text-ink-soft">
             Color
           </label>
           <input
@@ -113,7 +113,7 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">
+        <label className="mb-1 block text-xs font-medium text-ink-soft">
           Condition
         </label>
         <input
@@ -125,7 +125,7 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">
+          <label className="mb-1 block text-xs font-medium text-ink-soft">
             Min price
           </label>
           <input
@@ -138,7 +138,7 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">
+          <label className="mb-1 block text-xs font-medium text-ink-soft">
             Max price
           </label>
           <input
@@ -153,7 +153,7 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-gray-500">
+        <label className="mb-1 block text-xs font-medium text-ink-soft">
           Sort
         </label>
         <select
@@ -171,7 +171,7 @@ export function SearchFilters({ basePath = "/search" }: { basePath?: string }) {
 
       <button
         type="submit"
-        className="w-full rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+        className="w-full rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
       >
         Apply filters
       </button>

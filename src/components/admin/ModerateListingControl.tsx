@@ -41,7 +41,7 @@ export function ModerateListingControl({
         <button
           onClick={() => act("approve")}
           disabled={busy !== null}
-          className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+          className="rounded-xl bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
         >
           {busy === "approve" ? "…" : "Approve"}
         </button>
@@ -50,7 +50,7 @@ export function ModerateListingControl({
         <button
           onClick={() => act("reject")}
           disabled={busy !== null}
-          className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+          className="rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-700 disabled:opacity-50"
         >
           {busy === "reject" ? "…" : "Reject"}
         </button>
@@ -59,12 +59,12 @@ export function ModerateListingControl({
         <button
           onClick={() => act("hide")}
           disabled={busy !== null}
-          className="rounded-md bg-gray-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+          className="rounded-xl border border-brand-200 px-3 py-1.5 text-xs font-semibold text-ink-soft transition hover:bg-brand-50 disabled:opacity-50"
         >
           {busy === "hide" ? "…" : "Hide"}
         </button>
       )}
-      {error && <span className="text-xs text-red-600">{error}</span>}
+      {error && <span className="text-xs text-rose-600">{error}</span>}
     </div>
   );
 }

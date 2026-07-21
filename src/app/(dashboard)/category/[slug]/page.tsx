@@ -44,13 +44,13 @@ export default async function CategoryPage({
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10">
-      <nav className="mb-2 text-xs text-gray-400">
-        <Link href="/" className="hover:text-gray-600">
+      <nav className="mb-2 text-xs text-ink-soft">
+        <Link href="/" className="hover:text-ink">
           Home
         </Link>{" "}
-        / <span className="text-gray-600">{category.name}</span>
+        / <span className="text-ink-soft">{category.name}</span>
       </nav>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-ink">
         {category.name}
       </h1>
 
@@ -60,13 +60,13 @@ export default async function CategoryPage({
         </aside>
 
         <section>
-          <p className="mb-4 text-sm text-gray-500">
+          <p className="mb-4 text-sm text-ink-soft">
             {total} {total === 1 ? "item" : "items"}
           </p>
 
           {listings.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-gray-300 py-16 text-center">
-              <p className="text-sm text-gray-500">
+            <div className="rounded-2xl border border-dashed border-brand-200 py-16 text-center">
+              <p className="text-sm text-ink-soft">
                 No items in this category yet.
               </p>
             </div>

@@ -26,7 +26,7 @@ export function DeleteListingButton({ listingId }: { listingId: string }) {
       type="button"
       onClick={hide}
       disabled={busy}
-      className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+      className="rounded-xl border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
     >
       {busy ? "Hiding…" : "Hide listing"}
     </button>

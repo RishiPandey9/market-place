@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import { SettingsNav } from "@/components/settings/SettingsNav";
 
 // Account settings shell (Phase 3.2). Auth-gated at the layout level so every
 // /settings/* page requires a signed-in user; each page also re-checks the
@@ -11,7 +11,10 @@ const NAV: { href: string; label: string }[] = [
   { href: "/settings/profile", label: "Profile" },
   { href: "/settings/security", label: "Security" },
   { href: "/settings/addresses", label: "Addresses" },
+  { href: "/settings/payouts", label: "Payouts" },
+  { href: "/settings/payment-methods", label: "Payment methods" },
   { href: "/settings/notifications", label: "Notifications" },
+  { href: "/settings/referrals", label: "Referrals" },
 ];
 
 export default async function SettingsLayout({
@@ -25,20 +28,11 @@ export default async function SettingsLayout({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl gap-8 px-4 py-10">
-      <aside className="w-48 shrink-0">
-        <p className="mb-4 text-sm font-semibold text-gray-900">Settings</p>
-        <nav className="space-y-1">
-          {NAV.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 md:flex-row">
+      <aside className="w-full shrink-0 md:w-52">
+        <p className="mb-1 text-lg font-semibold tracking-tight text-ink">Settings</p>
+        <p className="mb-4 text-sm text-ink-soft">Manage your account</p>
+        <SettingsNav links={NAV} />
       </aside>
       <main className="min-w-0 flex-1">{children}</main>
     </div>

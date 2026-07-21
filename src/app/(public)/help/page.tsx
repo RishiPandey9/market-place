@@ -50,8 +50,10 @@ export default function HelpPage() {
       <div className="mt-10 rounded-lg bg-gray-50 px-5 py-4 text-sm text-gray-600">
         <p className="font-medium text-gray-900">Still need help?</p>
         <p className="mt-1">
-          A support ticket system is planned. For now, reach out through the
-          contact channel provided at launch.
+          <Link href="/support" className="font-medium text-gray-900 underline">
+            Open a support ticket
+          </Link>{" "}
+          and our team will get back to you. You&apos;ll need to be signed in.
         </p>
       </div>
     </div>

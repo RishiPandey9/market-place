@@ -62,12 +62,12 @@ export function NotificationForm({ initial }: { initial: Prefs }) {
 
   return (
     <div className="max-w-lg space-y-6">
-      <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
+      <ul className="divide-y divide-brand-50 rounded-2xl border border-brand-100 bg-white">
         {ROWS.map((row) => (
           <li key={row.key} className="flex items-center justify-between gap-4 px-4 py-3">
             <div>
-              <p className="text-sm font-medium text-gray-900">{row.label}</p>
-              <p className="text-xs text-gray-500">{row.hint}</p>
+              <p className="text-sm font-medium text-ink">{row.label}</p>
+              <p className="text-xs text-ink-soft">{row.hint}</p>
             </div>
             <input
               type="checkbox"
@@ -79,13 +79,13 @@ export function NotificationForm({ initial }: { initial: Prefs }) {
         ))}
       </ul>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      {saved && <p className="text-sm text-green-700">Preferences saved.</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
+      {saved && <p className="text-sm text-emerald-600">Preferences saved.</p>}
 
       <button
         onClick={save}
         disabled={loading}
-        className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
       >
         {loading ? "Saving…" : "Save preferences"}
       </button>

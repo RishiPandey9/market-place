@@ -5,11 +5,11 @@ import { getAdminContext } from "@/lib/rbac";
 import { ResolveDisputeControl } from "@/components/admin/ResolveDisputeControl";
 
 const STATUS_STYLE: Record<string, string> = {
-  OPEN: "bg-amber-100 text-amber-800",
-  UNDER_REVIEW: "bg-blue-100 text-blue-800",
-  RESOLVED_REFUND: "bg-red-100 text-red-700",
-  RESOLVED_RELEASE: "bg-green-100 text-green-700",
-  CLOSED: "bg-gray-100 text-gray-600",
+  OPEN: "bg-amber-50 text-amber-700",
+  UNDER_REVIEW: "bg-brand-50 text-brand-700",
+  RESOLVED_REFUND: "bg-rose-50 text-rose-700",
+  RESOLVED_RELEASE: "bg-emerald-50 text-emerald-700",
+  CLOSED: "bg-brand-50 text-brand-700",
 };
 
 export default async function AdminDisputesPage() {
@@ -35,11 +35,14 @@ export default async function AdminDisputesPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">
         Disputes
       </h1>
+      <p className="mt-1 mb-6 text-sm text-ink-soft">
+        Open disputes need staff review before escrow can be released or refunded.
+      </p>
       {disputes.length === 0 ? (
-        <p className="text-sm text-gray-500">No disputes.</p>
+        <p className="text-sm text-ink-soft">No disputes.</p>
       ) : (
         <ul className="space-y-4">
           {disputes.map((d) => {
@@ -48,28 +51,28 @@ export default async function AdminDisputesPage() {
             return (
               <li
                 key={d.id}
-                className="rounded-lg border border-gray-200 bg-white p-5"
+                className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-ink">
                       {d.order.listing.title}
                     </p>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-ink-soft">
                       Order {d.order.id} · {d.order.currency}{" "}
                       {d.order.totalPrice.toString()} · order state{" "}
                       {d.order.status}
                     </p>
                   </div>
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLE[d.status] ?? "bg-gray-100 text-gray-600"}`}
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[d.status] ?? "bg-brand-50 text-brand-700"}`}
                   >
                     {d.status}
                   </span>
                 </div>
-                <p className="mt-3 text-sm text-gray-700">{d.reason}</p>
+                <p className="mt-3 text-sm text-ink-soft">{d.reason}</p>
                 {d.resolution && (
-                  <p className="mt-2 text-xs text-gray-500">
+                  <p className="mt-2 text-xs text-ink-soft">
                     Resolution: {d.resolution}
                   </p>
                 )}
@@ -77,7 +80,7 @@ export default async function AdminDisputesPage() {
                   <ResolveDisputeControl disputeId={d.id} />
                 )}
                 {open && !canResolve && (
-                  <p className="mt-3 text-xs text-gray-400">
+                  <p className="mt-3 text-xs text-ink-soft">
                     You have read-only access to disputes.
                   </p>
                 )}

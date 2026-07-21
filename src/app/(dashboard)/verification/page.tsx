@@ -36,26 +36,26 @@ export default async function VerificationPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10">
-      <h1 className="mb-2 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="mb-2 text-2xl font-semibold tracking-tight text-ink">
         Identity verification
       </h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-ink-soft">
         Verify your identity (Level 3) to unlock withdrawals of your sales
         earnings. This is a one-time check.
       </p>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-5">
+      <div className="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-500">Current level</span>
-          <span className="text-sm font-medium text-gray-900">
+          <span className="text-sm text-ink-soft">Current level</span>
+          <span className="text-sm font-medium text-ink">
             {LEVEL_LABEL[user?.verificationLevel ?? "LEVEL_1_BASIC"]}
           </span>
         </div>
 
         {latestRecord && (
-          <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
-            <span className="text-sm text-gray-500">Latest check</span>
-            <span className="text-sm text-gray-700">
+          <div className="mt-3 flex items-center justify-between border-t border-brand-100 pt-3">
+            <span className="text-sm text-ink-soft">Latest check</span>
+            <span className="text-sm text-ink-soft">
               {latestRecord.status}
               {latestRecord.provider ? ` · ${latestRecord.provider}` : ""}
             </span>
@@ -64,7 +64,7 @@ export default async function VerificationPage() {
 
         <div className="mt-5">
           {isVerified ? (
-            <div className="rounded-md bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
               Your identity is verified. You can withdraw from your wallet.
             </div>
           ) : (

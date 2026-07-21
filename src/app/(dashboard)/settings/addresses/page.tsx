@@ -18,8 +18,8 @@ export default async function AddressSettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Addresses</h1>
-      <p className="mt-1 text-sm text-gray-500">
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">Addresses</h1>
+      <p className="mt-1 text-sm text-ink-soft">
         Shipping addresses used at checkout. Your default is pre-selected.
       </p>
       <div className="mt-6">

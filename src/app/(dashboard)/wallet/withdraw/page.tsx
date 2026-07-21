@@ -32,17 +32,17 @@ export default async function WithdrawPage() {
   if (user?.verificationLevel !== "LEVEL_3_ID_VERIFIED") {
     return (
       <main className="mx-auto w-full max-w-lg px-4 py-10">
-        <h1 className="mb-4 text-2xl font-semibold tracking-tight text-gray-900">
+        <h1 className="mb-4 text-2xl font-semibold tracking-tight text-ink">
           Withdraw
         </h1>
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-700">
           <p className="font-medium">Identity verification required</p>
           <p className="mt-1">
             You must complete Level 3 identity verification before withdrawing.
           </p>
           <Link
             href="/verification"
-            className="mt-3 inline-block rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+            className="mt-3 inline-block rounded-xl bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             Verify my identity
           </Link>
@@ -56,10 +56,10 @@ export default async function WithdrawPage() {
 
   return (
     <main className="mx-auto w-full max-w-lg px-4 py-10">
-      <h1 className="mb-2 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="mb-2 text-2xl font-semibold tracking-tight text-ink">
         Withdraw
       </h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-ink-soft">
         Transfer your available balance to your linked bank account.
       </p>
       <WithdrawForm available={available} currency={currency} />

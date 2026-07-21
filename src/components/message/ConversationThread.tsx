@@ -74,10 +74,10 @@ export function ConversationThread({ orderId }: { orderId: string }) {
   }
 
   return (
-    <div className="flex h-[70vh] flex-col rounded-lg border border-gray-200">
+    <div className="flex h-[70vh] flex-col rounded-2xl border border-brand-100 bg-white">
       <div className="flex-1 space-y-2 overflow-y-auto p-4">
         {messages.length === 0 ? (
-          <p className="text-center text-sm text-gray-400">
+          <p className="text-center text-sm text-ink-soft">
             No messages yet. Say hello.
           </p>
         ) : (
@@ -91,8 +91,8 @@ export function ConversationThread({ orderId }: { orderId: string }) {
                 <div
                   className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
                     mine
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-900"
+                      ? "bg-brand-600 text-white"
+                      : "bg-brand-50 text-ink"
                   }`}
                 >
                   {m.content}
@@ -104,8 +104,8 @@ export function ConversationThread({ orderId }: { orderId: string }) {
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-gray-100 p-3">
-        {error && <p className="mb-2 text-xs text-red-600">{error}</p>}
+      <div className="border-t border-brand-100 p-3">
+        {error && <p className="mb-2 text-xs text-rose-600">{error}</p>}
         <div className="flex gap-2">
           <input
             value={draft}
@@ -117,12 +117,12 @@ export function ConversationThread({ orderId }: { orderId: string }) {
               }
             }}
             placeholder="Type a message…"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+            className="w-full rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
           />
           <button
             onClick={send}
             disabled={sending}
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
           >
             Send
           </button>

@@ -35,17 +35,17 @@ export function DisputeForm({ orderId }: { orderId: string }) {
         onChange={(e) => setReason(e.target.value)}
         rows={5}
         placeholder="Describe the problem (e.g. item not as described, not received)…"
-        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
+        className="w-full rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30"
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
       <button
         onClick={submit}
         disabled={busy || reason.trim().length < 10}
-        className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+        className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-50"
       >
         {busy ? "Submitting…" : "Raise dispute"}
       </button>
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-ink-soft">
         Raising a dispute freezes the seller&apos;s payout until our team reviews
         it.
       </p>

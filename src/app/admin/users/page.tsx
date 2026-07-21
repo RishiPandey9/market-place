@@ -26,12 +26,13 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-900">
-        Users
-      </h1>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">Users</h1>
+      <p className="mt-1 mb-6 text-sm text-ink-soft">
+        The 100 most recently registered members.
+      </p>
+      <div className="overflow-x-auto rounded-2xl border border-brand-100 bg-white shadow-sm">
         <table className="w-full min-w-[600px] text-left text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+          <thead className="border-b border-brand-100 bg-brand-50 text-xs uppercase text-brand-700">
             <tr>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">KYC</th>
@@ -40,19 +41,19 @@ export default async function AdminUsersPage() {
               {canManage && <th className="px-4 py-3" />}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-brand-50">
             {users.map((u) => (
-              <tr key={u.id}>
-                <td className="px-4 py-3 text-gray-900">{u.email}</td>
-                <td className="px-4 py-3 text-gray-600">{u.verificationLevel}</td>
-                <td className="px-4 py-3 text-gray-600">{u._count.listings}</td>
+              <tr key={u.id} className="transition hover:bg-brand-50/60">
+                <td className="px-4 py-3 font-medium text-ink">{u.email}</td>
+                <td className="px-4 py-3 text-ink-soft">{u.verificationLevel}</td>
+                <td className="px-4 py-3 text-ink-soft">{u._count.listings}</td>
                 <td className="px-4 py-3">
                   {u.suspended ? (
-                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                    <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700">
                       Suspended
                     </span>
                   ) : (
-                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
                       Active
                     </span>
                   )}

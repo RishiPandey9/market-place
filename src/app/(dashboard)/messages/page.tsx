@@ -38,16 +38,16 @@ export default async function MessagesPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10">
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-ink">
         Messages
       </h1>
 
       {orders.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-300 py-16 text-center">
-          <p className="text-sm text-gray-500">No conversations yet.</p>
+        <div className="rounded-2xl border border-dashed border-brand-200 py-16 text-center">
+          <p className="text-sm text-ink-soft">No conversations yet.</p>
         </div>
       ) : (
-        <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200">
+        <ul className="divide-y divide-brand-50 rounded-2xl border border-brand-100">
           {orders.map((o) => {
             const counterpart =
               o.buyerId === userId ? o.seller.email : o.buyer.email;
@@ -56,16 +56,16 @@ export default async function MessagesPage() {
               <li key={o.id}>
                 <Link
                   href={`/messages/${o.id}`}
-                  className="block px-4 py-3 hover:bg-gray-50"
+                  className="block px-4 py-3 hover:bg-brand-50/60"
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-ink">
                       {o.listing.title}
                     </p>
-                    <span className="text-xs text-gray-400">{counterpart}</span>
+                    <span className="text-xs text-ink-soft">{counterpart}</span>
                   </div>
                   {last && (
-                    <p className="mt-0.5 truncate text-xs text-gray-500">
+                    <p className="mt-0.5 truncate text-xs text-ink-soft">
                       {last.content}
                     </p>
                   )}

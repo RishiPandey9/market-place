@@ -34,8 +34,8 @@ export default async function NotificationSettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Notifications</h1>
-      <p className="mt-1 text-sm text-gray-500">
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">Notifications</h1>
+      <p className="mt-1 text-sm text-ink-soft">
         Choose which updates you receive. Delivery wiring (email/SMS) lands with
         the notification service; your choices are saved now.
       </p>

@@ -45,10 +45,10 @@ export default async function CheckoutPage({
 
   return (
     <main className="mx-auto w-full max-w-lg px-4 py-10">
-      <h1 className="mb-1 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="mb-1 text-2xl font-semibold tracking-tight text-ink">
         Checkout
       </h1>
-      <p className="mb-6 text-sm text-gray-500">{listing.title}</p>
+      <p className="mb-6 text-sm text-ink-soft">{listing.title}</p>
 
       <CheckoutForm
         listingId={listing.id}

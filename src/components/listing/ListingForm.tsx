@@ -38,7 +38,7 @@ const EMPTY: ListingFormValues = {
 };
 
 const inputClass =
-  "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900";
+  "mt-1 block w-full rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30";
 
 // Shared create/edit form. `listingId` present => edit mode (PATCH), else create.
 export function ListingForm({
@@ -134,7 +134,7 @@ export function ListingForm({
   function fieldError(name: string) {
     const msg = fieldErrors[name]?.[0];
     return msg ? (
-      <p className="mt-1 text-xs text-red-600">{msg}</p>
+      <p className="mt-1 text-xs text-rose-600">{msg}</p>
     ) : null;
   }
 
@@ -144,7 +144,7 @@ export function ListingForm({
       className="space-y-5"
     >
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="title" className="block text-sm font-medium text-ink-soft">
           Title
         </label>
         <input
@@ -159,7 +159,7 @@ export function ListingForm({
       <div>
         <label
           htmlFor="description"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-ink-soft"
         >
           Description
         </label>
@@ -176,7 +176,7 @@ export function ListingForm({
       <div>
         <label
           htmlFor="categoryId"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-ink-soft"
         >
           Category
         </label>
@@ -198,7 +198,7 @@ export function ListingForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="brand" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="brand" className="block text-sm font-medium text-ink-soft">
             Brand
           </label>
           <input
@@ -209,7 +209,7 @@ export function ListingForm({
           />
         </div>
         <div>
-          <label htmlFor="size" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="size" className="block text-sm font-medium text-ink-soft">
             Size
           </label>
           <input
@@ -222,7 +222,7 @@ export function ListingForm({
         <div>
           <label
             htmlFor="condition"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-ink-soft"
           >
             Condition
           </label>
@@ -234,7 +234,7 @@ export function ListingForm({
           />
         </div>
         <div>
-          <label htmlFor="color" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="color" className="block text-sm font-medium text-ink-soft">
             Color
           </label>
           <input
@@ -248,7 +248,7 @@ export function ListingForm({
 
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="price" className="block text-sm font-medium text-ink-soft">
             Price
           </label>
           <input
@@ -263,7 +263,7 @@ export function ListingForm({
         <div>
           <label
             htmlFor="currency"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-ink-soft"
           >
             Currency
           </label>
@@ -279,7 +279,7 @@ export function ListingForm({
         <div>
           <label
             htmlFor="country"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-ink-soft"
           >
             Country
           </label>
@@ -297,7 +297,7 @@ export function ListingForm({
       <div>
         <label
           htmlFor="parcelSize"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-ink-soft"
         >
           Parcel size
         </label>
@@ -317,10 +317,10 @@ export function ListingForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-ink-soft">
           Image URLs
         </label>
-        <p className="mt-0.5 text-xs text-gray-400">
+        <p className="mt-0.5 text-xs text-ink-soft">
           Interim: paste image URLs. Direct upload (Cloudinary) comes later.
         </p>
         <div className="mt-1 flex gap-2">
@@ -339,7 +339,7 @@ export function ListingForm({
           <button
             type="button"
             onClick={addImage}
-            className="shrink-0 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="shrink-0 rounded-xl border border-brand-200 px-3 py-2 text-sm font-semibold text-ink-soft transition hover:bg-brand-50"
           >
             Add
           </button>
@@ -353,12 +353,12 @@ export function ListingForm({
                 <img
                   src={url}
                   alt=""
-                  className="h-20 w-20 rounded-md border border-gray-200 object-cover"
+                  className="h-20 w-20 rounded-xl border border-brand-100 object-cover"
                 />
                 <button
                   type="button"
                   onClick={() => removeImage(i)}
-                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-xs text-white"
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-xs text-white"
                   aria-label="Remove image"
                 >
                   ×
@@ -370,7 +370,7 @@ export function ListingForm({
       </div>
 
       {error && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-rose-600" role="alert">
           {error}
         </p>
       )}
@@ -380,7 +380,7 @@ export function ListingForm({
           type="button"
           disabled={submitting}
           onClick={() => submit("ACTIVE")}
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+          className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
         >
           {submitting ? "Saving…" : "Publish"}
         </button>
@@ -388,7 +388,7 @@ export function ListingForm({
           type="button"
           disabled={submitting}
           onClick={() => submit("DRAFT")}
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          className="rounded-xl border border-brand-200 px-4 py-2 text-sm font-semibold text-ink-soft transition hover:bg-brand-50 disabled:opacity-50"
         >
           Save draft
         </button>

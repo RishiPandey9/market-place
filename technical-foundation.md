@@ -103,6 +103,7 @@ model User {
   country             String?
   currency             String?
   language             String?
+  referralCode        String?            @unique  // this user's own shareable code (Phase 3.2)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
@@ -118,6 +119,11 @@ model User {
   notificationPreference NotificationPreference?
   adminRoles          AdminRoleAssignment[]
   auditLogs           AuditLog[]
+  sessions            UserSession[]                            // Phase 1.3 session mgmt
+  referralsMade       Referral[]         @relation("Referrer") // Phase 3.2
+  referralReceived    Referral?          @relation("Referred") // Phase 3.2
+  supportTickets      SupportTicket[]    @relation("TicketRequester")     // Phase 3.3
+  ticketMessages      TicketMessage[]    @relation("TicketMessageAuthor") // Phase 3.3
 }
 
 model Address {
@@ -320,6 +326,171 @@ model NotificationPreference {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
+
+// --- Phase 1.3 / 3.2 / 3.3 additions (see model comments in prisma/schema.prisma) ---
+
+enum ReferralStatus { PENDING QUALIFIED REWARDED }
+enum TicketStatus   { OPEN PENDING RESOLVED CLOSED }
+
+// Active login sessions. JWT carries this row's id (`sid`); jwt() callback
+// re-validates it each request, so revoking a row = remote logout.
+model UserSession {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+  @@index([userId])
+}
+
+// One row per referred signup; referredId unique (a user is referred once).
+model Referral {
+  id          String         @id @default(cuid())
+  referrerId  String
+  referrer    User           @relation("Referrer", fields: [referrerId], references: [id])
+  referredId  String         @unique
+  referred    User           @relation("Referred", fields: [referredId], references: [id])
+  code        String
+  status      ReferralStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  qualifiedAt DateTime?
+  rewardedAt  DateTime?
+  @@index([referrerId])
+}
+
+// Support tickets + threaded messages. RBAC support.read / support.manage.
+model SupportTicket {
+  id          String       @id @default(cuid())
+  requesterId String
+  requester   User         @relation("TicketRequester", fields: [requesterId], references: [id])
+  subject     String
+  category    String       // billing / shipping / account / other
+  status      TicketStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  lastReplyAt DateTime     @default(now())
+  resolvedAt  DateTime?
+  messages    TicketMessage[]
+  @@index([requesterId])
+  @@index([status])
+}
+
+model TicketMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id])
+  authorId  String
+  author    User          @relation("TicketMessageAuthor", fields: [authorId], references: [id])
+  fromStaff Boolean       @default(false)
+  body      String
+  createdAt DateTime      @default(now())
+  @@index([ticketId])
+}
+
+// --- SOW gap-closure models (migration 20260720050000) ------------------
+// Added to cover PDF scope items that were unmodeled: social follow, seller
+// bank accounts + withdrawals, buyer payment methods, offers, bundles, paid
+// listing promotions, marketing campaigns, and CMS/SEO content.
+
+enum OfferStatus      { PENDING COUNTERED ACCEPTED DECLINED EXPIRED WITHDRAWN }
+enum WithdrawalStatus { REQUESTED PROCESSING PAID FAILED CANCELLED }
+enum PromotionType    { BUMP SPOTLIGHT }
+enum CampaignType     { BANNER FEATURED EMAIL }
+enum ContentStatus    { DRAFT PUBLISHED ARCHIVED }
+
+// Follow-a-seller (SOW §02/§04). Self-M2M on User; (followerId, followingId) unique.
+model Follow {
+  id String @id @default(cuid())
+  followerId String; followingId String
+  createdAt DateTime @default(now())
+  @@unique([followerId, followingId]); @@index([followingId])
+}
+
+// Seller payout bank account (SOW §05/§08). Tokenized only — no raw account no.
+model BankAccount {
+  id String @id @default(cuid())
+  userId String; label String?; holderName String; country String; currency String
+  last4 String; providerAccountId String?
+  verified Boolean @default(false); isDefault Boolean @default(false)
+  createdAt DateTime @default(now()); updatedAt DateTime @updatedAt; archivedAt DateTime?
+  withdrawals Withdrawal[]
+  @@index([userId])
+}
+
+// Buyer card/wallet (SOW §05). Stripe PaymentMethod token + display metadata only (PCI).
+model PaymentMethod {
+  id String @id @default(cuid())
+  userId String; providerMethodId String; brand String?; last4 String?
+  expMonth Int?; expYear Int?; isDefault Boolean @default(false)
+  createdAt DateTime @default(now()); archivedAt DateTime?
+  @@index([userId])
+}
+
+// Withdraw AVAILABLE balance to bank (SOW §08 step 5). HARD GATE: Level-3 KYC required.
+model Withdrawal {
+  id String @id @default(cuid())
+  userId String; bankAccountId String
+  amount Decimal @db.Decimal(10,2); currency String
+  status WithdrawalStatus @default(REQUESTED)
+  providerPayoutId String?; failureReason String?
+  createdAt DateTime @default(now()); updatedAt DateTime @updatedAt; processedAt DateTime?
+  @@index([userId]); @@index([status])
+}
+
+// Buyer offer / counter-offer on a listing (SOW §02). parentOfferId threads counters.
+model Offer {
+  id String @id @default(cuid())
+  listingId String; buyerId String
+  amount Decimal @db.Decimal(10,2); currency String
+  status OfferStatus @default(PENDING); message String?; parentOfferId String?
+  expiresAt DateTime?; createdAt DateTime @default(now()); updatedAt DateTime @updatedAt
+  @@index([listingId]); @@index([buyerId])
+}
+
+// Smart bundle: multiple listings from one seller shipped together (SOW §09).
+model Bundle {
+  id String @id @default(cuid())
+  buyerId String; status String @default("draft")
+  createdAt DateTime @default(now()); updatedAt DateTime @updatedAt
+  items BundleItem[]
+  @@index([buyerId])
+}
+model BundleItem {
+  id String @id @default(cuid())
+  bundleId String; listingId String
+  @@unique([bundleId, listingId])
+}
+
+// Paid seller listing promotion — bump/spotlight (SOW §05).
+model ListingPromotion {
+  id String @id @default(cuid())
+  listingId String; sellerId String; type PromotionType
+  amount Decimal @db.Decimal(10,2); currency String; stripePaymentId String?
+  startsAt DateTime @default(now()); endsAt DateTime; createdAt DateTime @default(now())
+  @@index([listingId]); @@index([endsAt])
+}
+
+// Staff marketing campaign / banner / featured block (SOW §05/§06). RBAC-gated.
+model Campaign {
+  id String @id @default(cuid())
+  name String; type CampaignType; active Boolean @default(false)
+  startsAt DateTime?; endsAt DateTime?; payload Json?; createdById String?
+  createdAt DateTime @default(now()); updatedAt DateTime @updatedAt
+  @@index([type]); @@index([active])
+}
+
+// CMS content page / blog post + on-page SEO fields (SOW §05/§06). RBAC-gated.
+model ContentPage {
+  id String @id @default(cuid())
+  slug String @unique; title String; body String
+  isBlog Boolean @default(false); status ContentStatus @default(DRAFT)
+  metaTitle String?; metaDescription String?; authorId String?; publishedAt DateTime?
+  createdAt DateTime @default(now()); updatedAt DateTime @updatedAt
+  @@index([status]); @@index([isBlog])
+}
 ```
 
 ---
@@ -480,7 +651,7 @@ DEFAULT_COUNTRY=
 | Method | Route | Purpose |
 |---|---|---|
 | POST | `/api/auth/[...nextauth]` | Login/session (NextAuth) |
-| POST | `/api/auth/register` | Email/password signup (bcrypt hash, creates User) |
+| POST | `/api/auth/register` | Email/password signup (bcrypt hash, creates User). Accepts optional `referralCode`; generates the new user's own code + records a Referral row. |
 | POST | `/api/stripe/connect-onboard` | Create/refresh seller Stripe Connect account + onboarding link |
 | POST | `/api/listings` | Create listing |
 | GET | `/api/listings/[id]` | Get listing detail |
@@ -498,6 +669,10 @@ DEFAULT_COUNTRY=
 | GET/POST | `/api/settings/addresses` | List / add the user's addresses. Owner-scoped. |
 | PATCH/DELETE | `/api/settings/addresses/[id]` | Edit / remove an address (default-address handling). Owner-scoped. |
 | GET/PATCH | `/api/settings/notifications` | Read / upsert notification preferences. Owner-scoped. |
+| GET/DELETE | `/api/settings/sessions` | List active login sessions / sign out all other devices. Owner-scoped. (Phase 1.3) |
+| DELETE | `/api/settings/sessions/[id]` | Remote-logout a single device (soft-revoke). Owner-scoped. |
+| GET/POST | `/api/support/tickets` | List the user's tickets / open a new ticket. Owner-scoped. (Phase 3.3) |
+| GET/POST | `/api/support/tickets/[id]` | Read a ticket thread / post a user reply. Owner-scoped. |
 | POST | `/api/verification` | Start KYC (Level 3) identity verification for the signed-in user; returns provider redirect. |
 | POST | `/api/messages` | Send message |
 | POST | `/api/disputes` | Raise a dispute |
@@ -505,6 +680,8 @@ DEFAULT_COUNTRY=
 | PATCH | `/api/admin/listings/[id]` | Admin moderates a listing (approve/reject/hide). RBAC: `listings.moderate`. |
 | PATCH | `/api/admin/users/[id]` | Admin suspends/reactivates a user. RBAC: `users.manage`. |
 | POST | `/api/admin/roles` | Admin assigns/revokes an admin role. RBAC: `roles.manage`. |
+| GET | `/api/admin/support/tickets` | Support queue (OPEN+PENDING or ?status=). RBAC: `support.read`. (Phase 3.3) |
+| GET/POST/PATCH | `/api/admin/support/tickets/[id]` | Read thread / agent reply / change status (resolve/close/reopen). RBAC: `support.read` (GET), `support.manage` (POST/PATCH). |
 | POST | `/api/webhooks/stripe` | Stripe event handler (payment, payout events) |
 | POST | `/api/webhooks/shipping` | Carrier tracking event handler |
 | POST | `/api/webhooks/kyc` | KYC provider verification result handler |

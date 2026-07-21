@@ -41,13 +41,13 @@ export default async function ConversationPage({
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10">
       <div className="mb-4">
-        <Link href="/messages" className="text-xs text-gray-400 hover:text-gray-600">
+        <Link href="/messages" className="text-xs text-ink-soft hover:text-ink">
           ← All messages
         </Link>
-        <h1 className="mt-1 text-lg font-semibold tracking-tight text-gray-900">
+        <h1 className="mt-1 text-lg font-semibold tracking-tight text-ink">
           {order.listing.title}
         </h1>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-ink-soft">
           with {counterpart} ·{" "}
           <Link href={`/orders/${order.id}`} className="underline">
             view order

@@ -19,20 +19,23 @@ export default async function VerificationQueuePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">
         Verification queue
       </h1>
+      <p className="mt-1 mb-6 text-sm text-ink-soft">
+        Pending KYC records awaiting review before withdrawals are enabled.
+      </p>
       {records.length === 0 ? (
-        <p className="text-sm text-gray-500">No pending verifications.</p>
+        <p className="text-sm text-ink-soft">No pending verifications.</p>
       ) : (
         <ul className="space-y-2">
           {records.map((r) => (
             <li
               key={r.id}
-              className="rounded-lg border border-gray-200 bg-white p-4 text-sm"
+              className="rounded-2xl border border-brand-100 bg-white p-4 text-sm shadow-sm"
             >
-              <p className="text-gray-900">User {r.userId}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-ink">User {r.userId}</p>
+              <p className="text-xs text-ink-soft">
                 {r.provider} · {r.providerRefId} · {r.status}
               </p>
             </li>

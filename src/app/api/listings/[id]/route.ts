@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { updateListingSchema } from "@/lib/validation";
+import { checkCanPublish } from "@/lib/trust";
+import { ListingStatus } from "@prisma/client";
 
 // Optional string fields arrive as "" from the form; store them as null.
 function emptyToNull(value: string | undefined): string | null | undefined {
@@ -54,7 +56,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
   const existing = await prisma.listing.findUnique({
     where: { id },
-    select: { id: true, sellerId: true },
+    select: { id: true, sellerId: true, status: true, price: true },
   });
   if (!existing) {
     return NextResponse.json({ error: "Listing not found" }, { status: 404 });
@@ -87,6 +89,56 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     });
     if (!category) {
       return NextResponse.json({ error: "Category not found" }, { status: 400 });
+    }
+  }
+
+  // Verification-tier selling limit (SOW 1.2). Enforce whenever the edit results
+  // in an ACTIVE listing: either a DRAFT/HIDDEN → ACTIVE publish, or a price
+  // change on an already-ACTIVE item. The active-listing count excludes this
+  // listing so re-publishing it doesn't count against itself.
+  const willBeActive =
+    data.status === "ACTIVE" ||
+    (data.status === undefined && existing.status === ListingStatus.ACTIVE);
+  const isPublishTransition =
+    data.status === "ACTIVE" && existing.status !== ListingStatus.ACTIVE;
+  const effectivePrice = data.price ?? Number(existing.price);
+
+  if (willBeActive) {
+    const [seller, activeCount] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { verificationLevel: true },
+      }),
+      prisma.listing.count({
+        where: {
+          sellerId: session.user.id,
+          status: ListingStatus.ACTIVE,
+          id: { not: id },
+        },
+      }),
+    ]);
+    if (!seller) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    const check = checkCanPublish({
+      level: seller.verificationLevel,
+      // Only a publish transition consumes a new active slot; editing an item
+      // that is already ACTIVE must not be blocked by the count.
+      currentActiveCount: isPublishTransition ? activeCount : 0,
+      price: effectivePrice,
+    });
+    if (!check.ok) {
+      return NextResponse.json(
+        {
+          error:
+            check.reason === "price_exceeds_tier"
+              ? `Items over ${check.limit} require a higher verification level. Verify your identity to list higher-value items.`
+              : `You've reached your active-listing limit (${check.limit}) for your verification level. Verify your identity to list more.`,
+          reason: check.reason,
+          limit: check.limit,
+        },
+        { status: 403 },
+      );
     }
   }
 

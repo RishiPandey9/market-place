@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { TICKET_CATEGORIES } from "@/lib/ticket";
+
 // Password strength rules (Phase 1.3): min 8 chars, at least one lowercase,
 // one uppercase, and one digit. Kept here so the register route and any future
 // password-change flow share one source of truth.
@@ -20,6 +22,14 @@ export const emailSchema = z
 export const registerSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
+  // Optional referral code entered at signup or carried via ?ref=. Empty string
+  // is coerced to undefined so a blank field is simply "no referral".
+  referralCode: z
+    .string()
+    .trim()
+    .max(32)
+    .optional()
+    .transform((v) => (v ? v : undefined)),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -352,3 +362,162 @@ export const notificationPreferencesSchema = z
 export type NotificationPreferencesInput = z.infer<
   typeof notificationPreferencesSchema
 >;
+
+// ==============================
+// Support tickets (Phase 3.3)
+// ==============================
+
+// Open a new ticket: subject + category + the first message body.
+export const createTicketSchema = z.object({
+  subject: z.string().trim().min(4, "Subject is too short").max(140),
+  category: z.enum(TICKET_CATEGORIES),
+  message: z.string().trim().min(1, "Message is required").max(4000),
+});
+
+export type CreateTicketInput = z.infer<typeof createTicketSchema>;
+
+// Post a reply to an existing ticket (user or agent).
+export const ticketReplySchema = z.object({
+  body: z.string().trim().min(1, "Message is required").max(4000),
+});
+
+export type TicketReplyInput = z.infer<typeof ticketReplySchema>;
+
+// Agent-only explicit status change. Reply-driven transitions are handled
+// separately; this is for "resolve"/"close"/"reopen" buttons.
+export const ticketStatusSchema = z.object({
+  status: z.enum(["OPEN", "PENDING", "RESOLVED", "CLOSED"]),
+});
+
+export type TicketStatusInput = z.infer<typeof ticketStatusSchema>;
+
+// ==============================
+// Social — follow a seller (SOW §02/§04)
+// ==============================
+export const followSchema = z.object({
+  sellerId: z.string().min(1, "sellerId is required"),
+  follow: z.boolean(),
+});
+export type FollowInput = z.infer<typeof followSchema>;
+
+// ==============================
+// Bank accounts — seller payout details (SOW §05/§08)
+// ==============================
+// Only tokenized / display fields are ever accepted here. A raw IBAN or full
+// account number must NEVER be posted to or stored by the app (PCI/data-at-rest,
+// CLAUDE.md #5) — the real external account lives with Stripe Connect. `last4`
+// is display-only and `providerAccountId` is the Stripe external-account token.
+export const createBankAccountSchema = z.object({
+  label: z.string().trim().max(60).optional().or(z.literal("")),
+  holderName: z.string().trim().min(2, "Account holder name is required").max(120),
+  country: z.string().trim().length(2, "Use a 2-letter country code").toUpperCase(),
+  currency: z.string().trim().length(3, "Use a 3-letter currency code").toUpperCase(),
+  last4: z.string().trim().regex(/^\d{4}$/, "Enter the last 4 digits"),
+  providerAccountId: z.string().trim().max(255).optional().or(z.literal("")),
+  isDefault: z.boolean().optional().default(false),
+});
+export type CreateBankAccountInput = z.infer<typeof createBankAccountSchema>;
+
+// ==============================
+// Payment methods — buyer cards/wallets (SOW §05)
+// ==============================
+// Card data is NEVER accepted or stored (PCI-DSS). The client tokenizes the card
+// with Stripe.js and posts only the resulting PaymentMethod id plus the safe
+// display metadata Stripe returns (brand + last4 + expiry).
+export const createPaymentMethodSchema = z.object({
+  providerMethodId: z
+    .string()
+    .trim()
+    .min(3, "A tokenized payment method id is required")
+    .max(255),
+  brand: z.string().trim().max(40).optional().or(z.literal("")),
+  last4: z.string().trim().regex(/^\d{4}$/, "last4 must be 4 digits").optional().or(z.literal("")),
+  expMonth: z.coerce.number().int().min(1).max(12).optional(),
+  expYear: z.coerce.number().int().min(2000).max(2100).optional(),
+  isDefault: z.boolean().optional().default(false),
+});
+export type CreatePaymentMethodInput = z.infer<typeof createPaymentMethodSchema>;
+
+// ==============================
+// Offers — buyer negotiation on a listing (SOW §02)
+// ==============================
+const offerAmount = z.coerce
+  .number({ error: "Enter an offer amount" })
+  .positive("Offer must be greater than 0")
+  .max(99_999_999.99, "Offer is too large")
+  .refine((n) => Number.isFinite(n) && Math.round(n * 100) === n * 100, {
+    message: "Offer can have at most 2 decimal places",
+  });
+
+// Buyer opens an offer on a listing.
+export const createOfferSchema = z.object({
+  amount: offerAmount,
+  message: z.string().trim().max(500).optional().or(z.literal("")),
+});
+export type CreateOfferInput = z.infer<typeof createOfferSchema>;
+
+// Seller/buyer act on an existing offer. "counter" requires an amount.
+export const offerActionSchema = z
+  .object({
+    action: z.enum(["accept", "decline", "counter", "withdraw"]),
+    amount: offerAmount.optional(),
+    message: z.string().trim().max(500).optional().or(z.literal("")),
+  })
+  .refine((v) => v.action !== "counter" || v.amount !== undefined, {
+    message: "A counter-offer needs an amount",
+    path: ["amount"],
+  });
+export type OfferActionInput = z.infer<typeof offerActionSchema>;
+
+// ==============================
+// Bundles — group same-seller listings to ship together (SOW §09)
+// ==============================
+export const createBundleSchema = z.object({
+  listingIds: z
+    .array(z.string().min(1))
+    .min(2, "A bundle needs at least 2 items")
+    .max(20, "A bundle can hold at most 20 items"),
+});
+export type CreateBundleInput = z.infer<typeof createBundleSchema>;
+
+// ==============================
+// Listing promotion — paid bump/spotlight (SOW §05)
+// ==============================
+export const promoteListingSchema = z.object({
+  type: z.enum(["BUMP", "SPOTLIGHT"]),
+  days: z.coerce.number().int().min(1, "Minimum 1 day").max(30, "Maximum 30 days"),
+});
+export type PromoteListingInput = z.infer<typeof promoteListingSchema>;
+
+// ==============================
+// Admin — marketing campaigns (SOW §05/§06)
+// ==============================
+export const campaignSchema = z.object({
+  name: z.string().trim().min(2, "Name is required").max(120),
+  type: z.enum(["BANNER", "FEATURED", "EMAIL"]),
+  active: z.boolean().optional().default(false),
+  startsAt: z.coerce.date().optional(),
+  endsAt: z.coerce.date().optional(),
+  // Free-form per-type config (image url, target url, listing ids, etc.).
+  payload: z.record(z.string(), z.unknown()).optional(),
+});
+export type CampaignInput = z.infer<typeof campaignSchema>;
+
+// ==============================
+// Admin — CMS / SEO content (SOW §05/§06)
+// ==============================
+export const contentPageSchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use a url-safe slug (lowercase, dashes)")
+    .max(140),
+  title: z.string().trim().min(2, "Title is required").max(200),
+  body: z.string().trim().min(1, "Body is required").max(100_000),
+  isBlog: z.boolean().optional().default(false),
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).optional().default("DRAFT"),
+  metaTitle: z.string().trim().max(200).optional().or(z.literal("")),
+  metaDescription: z.string().trim().max(320).optional().or(z.literal("")),
+});
+export type ContentPageInput = z.infer<typeof contentPageSchema>;

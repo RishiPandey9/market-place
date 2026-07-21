@@ -40,7 +40,7 @@ export function StartVerificationButton() {
 
   if (session?.sandbox) {
     return (
-      <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
         <p className="font-medium">Sandbox verification started</p>
         <p className="mt-1">
           No live KYC provider is configured, so no real ID check runs. Session
@@ -57,11 +57,11 @@ export function StartVerificationButton() {
       <button
         onClick={start}
         disabled={loading}
-        className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
       >
         {loading ? "Starting…" : "Verify my identity"}
       </button>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
     </div>
   );
 }

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { DeleteListingButton } from "@/components/listing/DeleteListingButton";
+import { ListingGallery } from "@/components/listing/ListingGallery";
+import { TrustBadges } from "@/components/trust/TrustBadges";
 
 function formatPrice(price: string, currency: string): string {
   const amount = Number(price);
@@ -29,7 +31,15 @@ export default async function ListingDetailPage({
     where: { id },
     include: {
       category: { select: { name: true } },
-      seller: { select: { id: true, verificationLevel: true } },
+      seller: {
+        select: {
+          id: true,
+          verificationLevel: true,
+          emailVerified: true,
+          phoneVerified: true,
+          stripeAccountId: true,
+        },
+      },
     },
   });
 
@@ -50,112 +60,131 @@ export default async function ListingDetailPage({
     ["Parcel size", listing.parcelSize],
   ].filter(([, v]) => Boolean(v));
 
-  return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-10">
-      <div className="grid gap-8 md:grid-cols-2">
-        <div className="space-y-3">
-          <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100">
-            {listing.images[0] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={listing.images[0]}
-                alt={listing.title}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
-                No image
-              </div>
-            )}
-          </div>
-          {listing.images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {listing.images.slice(1).map((url, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={`${url}-${i}`}
-                  src={url}
-                  alt=""
-                  className="aspect-square w-full rounded-md border border-gray-200 object-cover"
-                />
-              ))}
-            </div>
-          )}
-        </div>
+  const sellerLabel = `Seller ${listing.seller.id.slice(-6).toUpperCase()}`;
 
-        <div>
+  return (
+    <main className="mx-auto w-full max-w-5xl px-4 py-8">
+      {/* Breadcrumb */}
+      <nav className="mb-5 flex items-center gap-1.5 text-xs text-ink-soft">
+        <Link href="/" className="hover:text-brand-700">
+          Home
+        </Link>
+        <span>/</span>
+        {listing.category?.name && (
+          <>
+            <span>{listing.category.name}</span>
+            <span>/</span>
+          </>
+        )}
+        <span className="truncate text-ink">{listing.title}</span>
+      </nav>
+
+      <div className="grid gap-8 md:grid-cols-2">
+        <ListingGallery images={listing.images} title={listing.title} />
+
+        <div className="md:sticky md:top-28 md:self-start">
           {isOwner && listing.status !== "ACTIVE" && (
-            <span className="mb-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+            <span className="mb-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium capitalize text-amber-700">
               {listing.status.replace(/_/g, " ").toLowerCase()}
             </span>
           )}
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
             {listing.title}
           </h1>
-          <p className="mt-2 text-xl font-semibold text-gray-900">
+          <p className="mt-2 text-3xl font-extrabold text-ink">
             {formatPrice(listing.price.toString(), listing.currency)}
           </p>
-
-          <p className="mt-4 whitespace-pre-line text-sm text-gray-600">
-            {listing.description}
-          </p>
-
-          {details.length > 0 && (
-            <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              {details.map(([label, value]) => (
-                <div key={label as string}>
-                  <dt className="text-gray-400">{label}</dt>
-                  <dd className="text-gray-900">{value as string}</dd>
-                </div>
-              ))}
-            </dl>
+          {listing.condition && (
+            <p className="mt-1 text-sm text-ink-soft">
+              Condition: <span className="font-medium text-ink">{listing.condition}</span>
+            </p>
           )}
 
-          <p className="mt-6 text-xs text-gray-400">
-            Seller:{" "}
-            <Link
-              href={`/seller/${listing.seller.id}`}
-              className="text-gray-600 underline hover:text-gray-900"
-            >
-              Seller {listing.seller.id.slice(-6).toUpperCase()}
-            </Link>
-          </p>
-
-          {isOwner && (
-            <div className="mt-8 flex gap-3 border-t border-gray-100 pt-6">
+          {/* Buy / owner actions */}
+          {isOwner ? (
+            <div className="mt-6 flex gap-3 rounded-2xl border border-gray-100 bg-gray-50 p-4">
               <Link
                 href={`/listings/${listing.id}/edit`}
-                className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+                className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700"
               >
-                Edit
+                Edit listing
               </Link>
               {listing.status !== "HIDDEN" && (
                 <DeleteListingButton listingId={listing.id} />
               )}
             </div>
+          ) : (
+            listing.status === "ACTIVE" && (
+              <div className="mt-6 space-y-3">
+                {session?.user ? (
+                  <Link
+                    href={`/checkout/${listing.id}`}
+                    className="block rounded-full bg-brand-600 px-6 py-3.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700"
+                  >
+                    Buy now
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/login?callbackUrl=/checkout/${listing.id}`}
+                    className="block rounded-full bg-brand-600 px-6 py-3.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700"
+                  >
+                    Log in to buy
+                  </Link>
+                )}
+                <p className="flex items-center justify-center gap-1.5 text-xs text-ink-soft">
+                  <svg className="h-3.5 w-3.5 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4z" />
+                  </svg>
+                  Protected by escrow until you confirm delivery
+                </p>
+              </div>
+            )
           )}
 
-          {!isOwner && listing.status === "ACTIVE" && (
-            <div className="mt-8 border-t border-gray-100 pt-6">
-              {session?.user ? (
-                <Link
-                  href={`/checkout/${listing.id}`}
-                  className="inline-block rounded-md bg-gray-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
-                >
-                  Buy now
-                </Link>
-              ) : (
-                <Link
-                  href={`/login?callbackUrl=/checkout/${listing.id}`}
-                  className="inline-block rounded-md bg-gray-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
-                >
-                  Log in to buy
-                </Link>
-              )}
-              <p className="mt-2 text-xs text-gray-400">
-                Protected by escrow until you confirm delivery.
-              </p>
-            </div>
+          {/* Seller card */}
+          <div className="mt-6 rounded-2xl border border-gray-100 p-4">
+            <Link href={`/seller/${listing.seller.id}`} className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-800">
+                {listing.seller.id.slice(-2).toUpperCase()}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-ink">
+                  {sellerLabel}
+                </span>
+                <span className="text-xs text-brand-700 hover:underline">
+                  View profile
+                </span>
+              </span>
+            </Link>
+            <TrustBadges
+              className="mt-3"
+              signals={{
+                emailVerified: listing.seller.emailVerified,
+                phoneVerified: listing.seller.phoneVerified,
+                verificationLevel: listing.seller.verificationLevel,
+                stripeAccountId: listing.seller.stripeAccountId,
+              }}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="mt-6">
+            <h2 className="text-sm font-semibold text-ink">Description</h2>
+            <p className="mt-2 whitespace-pre-line text-sm text-ink-soft">
+              {listing.description}
+            </p>
+          </div>
+
+          {/* Details */}
+          {details.length > 0 && (
+            <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-6 text-sm">
+              {details.map(([label, value]) => (
+                <div key={label as string}>
+                  <dt className="text-xs text-gray-400">{label}</dt>
+                  <dd className="mt-0.5 font-medium text-ink">{value as string}</dd>
+                </div>
+              ))}
+            </dl>
           )}
         </div>
       </div>

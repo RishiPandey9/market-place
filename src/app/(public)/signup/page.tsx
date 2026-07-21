@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialRef = searchParams.get("ref") ?? "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [referralCode, setReferralCode] = useState(initialRef);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -23,7 +26,11 @@ export default function SignupPage() {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email,
+        password,
+        referralCode: referralCode || undefined,
+      }),
     });
 
     if (res.status === 201) {
@@ -106,6 +113,24 @@ export default function SignupPage() {
             </p>
           </div>
 
+          <div>
+            <label
+              htmlFor="referralCode"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Referral code{" "}
+              <span className="font-normal text-gray-400">(optional)</span>
+            </label>
+            <input
+              id="referralCode"
+              type="text"
+              autoComplete="off"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+            />
+          </div>
+
           {fieldErrors.length > 0 && (
             <ul className="list-disc pl-5 text-sm text-red-600" role="alert">
               {fieldErrors.map((msg) => (
@@ -136,5 +161,13 @@ export default function SignupPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
   );
 }

@@ -40,20 +40,20 @@ export default async function RaiseDisputePage({
 
   return (
     <main className="mx-auto w-full max-w-lg px-4 py-10">
-      <Link href={`/orders/${order.id}`} className="text-xs text-gray-400 hover:text-gray-600">
+      <Link href={`/orders/${order.id}`} className="text-xs text-ink-soft hover:text-ink">
         ← Back to order
       </Link>
-      <h1 className="mb-1 mt-2 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="mb-1 mt-2 text-2xl font-semibold tracking-tight text-ink">
         Report a problem
       </h1>
-      <p className="mb-6 text-sm text-gray-500">{order.listing.title}</p>
+      <p className="mb-6 text-sm text-ink-soft">{order.listing.title}</p>
 
       {order.dispute ? (
-        <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
           A dispute is already open for this order and is under review.
         </p>
       ) : !disputable ? (
-        <p className="rounded-md bg-gray-50 px-4 py-3 text-sm text-gray-600">
+        <p className="rounded-xl bg-brand-50 px-4 py-3 text-sm text-ink-soft">
           This order can no longer be disputed.
         </p>
       ) : (

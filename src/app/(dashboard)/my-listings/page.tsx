@@ -23,23 +23,23 @@ export default async function MyListingsPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">
           My listings
         </h1>
         <Link
           href="/listings/new"
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+          className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
         >
           New listing
         </Link>
       </div>
 
       {listings.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-300 py-16 text-center">
-          <p className="text-sm text-gray-500">You have no listings yet.</p>
+        <div className="rounded-2xl border border-dashed border-brand-200 py-16 text-center">
+          <p className="text-sm text-ink-soft">You have no listings yet.</p>
           <Link
             href="/listings/new"
-            className="mt-3 inline-block text-sm font-medium text-gray-900 underline"
+            className="mt-3 inline-block text-sm font-medium text-brand-700 underline hover:text-brand-800"
           >
             Create your first listing
           </Link>

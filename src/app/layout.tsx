@@ -14,8 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Marketplace",
-  description: "Buy and sell pre-loved fashion, designer and more.",
+  title: {
+    default: "Reloved — Buy & sell pre-loved fashion",
+    template: "%s · Reloved",
+  },
+  description:
+    "Buy and sell pre-loved fashion, designer, and more. Every purchase protected by secure escrow until you confirm delivery.",
 };
 
 export default function RootLayout({

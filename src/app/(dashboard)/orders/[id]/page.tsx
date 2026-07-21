@@ -68,50 +68,50 @@ export default async function OrderDetailPage({
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10">
       {created && (
-        <div className="mb-6 rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">
+        <div className="mb-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           Order placed. Your payment is held in escrow until you confirm delivery.
         </div>
       )}
 
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-ink">
             {order.listing.title}
           </h1>
-          <p className="mt-1 text-sm text-gray-500">Order {order.id}</p>
+          <p className="mt-1 text-sm text-ink-soft">Order {order.id}</p>
         </div>
-        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+        <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
           {STATUS_LABEL[order.status] ?? order.status}
         </span>
       </div>
 
-      <div className="mb-6 space-y-2 rounded-lg border border-gray-200 p-4 text-sm">
+      <div className="mb-6 space-y-2 rounded-2xl border border-brand-100 p-4 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-500">Item</span>
+          <span className="text-ink-soft">Item</span>
           <span>{fmt(order.itemPrice.toString(), order.currency)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">Shipping</span>
+          <span className="text-ink-soft">Shipping</span>
           <span>{fmt(order.shippingPrice.toString(), order.currency)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">Buyer protection</span>
+          <span className="text-ink-soft">Buyer protection</span>
           <span>{fmt(order.protectionFee.toString(), order.currency)}</span>
         </div>
-        <div className="mt-2 flex justify-between border-t border-gray-100 pt-2 font-semibold">
+        <div className="mt-2 flex justify-between border-t border-brand-50 pt-2 font-semibold">
           <span>Total</span>
           <span>{fmt(order.totalPrice.toString(), order.currency)}</span>
         </div>
       </div>
 
       {(order.trackingNumber || order.shippingCarrier) && (
-        <div className="mb-6 rounded-lg border border-gray-200 p-4 text-sm">
-          <h2 className="mb-2 font-medium text-gray-900">Tracking</h2>
+        <div className="mb-6 rounded-2xl border border-brand-100 p-4 text-sm">
+          <h2 className="mb-2 font-medium text-ink">Tracking</h2>
           {order.shippingCarrier && (
-            <p className="text-gray-600">Carrier: {order.shippingCarrier}</p>
+            <p className="text-ink-soft">Carrier: {order.shippingCarrier}</p>
           )}
           {order.trackingNumber && (
-            <p className="text-gray-600">Tracking #: {order.trackingNumber}</p>
+            <p className="text-ink-soft">Tracking #: {order.trackingNumber}</p>
           )}
         </div>
       )}
@@ -125,14 +125,14 @@ export default async function OrderDetailPage({
         )}
         <a
           href={`/messages/${order.id}`}
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-xl border border-brand-200 px-4 py-2 text-sm font-medium text-ink-soft hover:bg-brand-50"
         >
           Message {isBuyer ? "seller" : "buyer"}
         </a>
         {isBuyer && (order.status === "PAID" || order.status === "SHIPPED" || order.status === "DELIVERED") && !order.dispute && (
           <a
             href={`/orders/${order.id}/dispute`}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-xl border border-brand-200 px-4 py-2 text-sm font-medium text-ink-soft hover:bg-brand-50"
           >
             Report a problem
           </a>

@@ -74,88 +74,160 @@ enum NotificationChannel {
   SMS
 }
 
+enum ReferralStatus {
+  PENDING // referred user signed up; qualifying action not yet completed
+  QUALIFIED // referred user met the reward condition (e.g. first order)
+  REWARDED // reward granted to referrer (and/or referred)
+}
+
+enum TicketStatus {
+  OPEN // awaiting first/next staff response
+  PENDING // staff replied; awaiting the user
+  RESOLVED // staff marked it solved (user can still reopen by replying)
+  CLOSED // archived; no further replies
+}
+
+// Offer negotiation on a listing (buyer "makes an offer"; seller accepts /
+// declines / counters). SOW §02 Discovery & purchase, §05 Listing detail.
+enum OfferStatus {
+  PENDING // buyer proposed; awaiting seller
+  COUNTERED // seller counter-offered; awaiting buyer
+  ACCEPTED // agreed; buyer may check out at the agreed price
+  DECLINED // seller/buyer rejected
+  EXPIRED // lapsed without action
+  WITHDRAWN // proposer cancelled
+}
+
+// Seller withdrawal of available wallet balance to a verified bank account.
+// SOW §08 step 5 — requires Level-3 KYC (and optionally 2FA) before payout.
+enum WithdrawalStatus {
+  REQUESTED // seller asked to withdraw; awaiting processing
+  PROCESSING // sent to the payment provider (Stripe payout)
+  PAID // funds transferred to the bank account
+  FAILED // provider rejected / bounced
+  CANCELLED // cancelled before processing
+}
+
+// Paid listing promotion (SOW §05 "Listing promotion — bump/spotlight").
+enum PromotionType {
+  BUMP // re-surface to the top of the feed
+  SPOTLIGHT // featured placement for a window
+}
+
+// Staff-run marketing campaign / banner / featured block (SOW §05 admin
+// "Promotions & marketing", §06 Marketing manager role).
+enum CampaignType {
+  BANNER // homepage / category banner
+  FEATURED // featured-items block
+  EMAIL // email marketing campaign
+}
+
+// CMS content (SOW §05 admin "Content / CMS & SEO", §06 SEO/content manager).
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 // ==============================
 // CORE MODELS
 // ==============================
 
 model User {
-  id                  String             @id @default(cuid())
-  email               String             @unique
-  passwordHash        String?
-  phone               String?
-  phoneVerified       Boolean            @default(false)
-  emailVerified       Boolean            @default(false)
-  verificationLevel   VerificationLevel  @default(LEVEL_1_BASIC)
-  stripeAccountId     String?            // Stripe Connect account id (seller payouts)
-  stripeCustomerId    String?            // Stripe customer id (buyer payments)
-  twoFactorEnabled    Boolean            @default(false)
-  suspended           Boolean            @default(false) // admin trust-and-safety suspension (Phase 2)
-  suspendedAt         DateTime?
-  country             String?
-  currency            String?
-  language            String?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  id                String            @id @default(cuid())
+  email             String            @unique
+  passwordHash      String?
+  phone             String?
+  phoneVerified     Boolean           @default(false)
+  emailVerified     Boolean           @default(false)
+  verificationLevel VerificationLevel @default(LEVEL_1_BASIC)
+  stripeAccountId   String? // Stripe Connect account id (seller payouts)
+  stripeCustomerId  String? // Stripe customer id (buyer payments)
+  twoFactorEnabled  Boolean           @default(false)
+  suspended         Boolean           @default(false) // admin trust-and-safety suspension (Phase 2)
+  suspendedAt       DateTime?
+  country           String?
+  currency          String?
+  language          String?
+  referralCode      String?           @unique // this user's own shareable code
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
-  addresses           Address[]
-  listings            Listing[]          @relation("SellerListings")
-  ordersAsBuyer       Order[]            @relation("BuyerOrders")
-  ordersAsSeller      Order[]            @relation("SellerOrders")
-  walletTransactions  WalletTransaction[]
-  messagesSent        Message[]          @relation("MessageSender")
-  ratingsGiven        Rating[]           @relation("RatingAuthor")
-  ratingsReceived     Rating[]           @relation("RatingTarget")
-  notifications       Notification[]
+  addresses              Address[]
+  listings               Listing[]               @relation("SellerListings")
+  ordersAsBuyer          Order[]                 @relation("BuyerOrders")
+  ordersAsSeller         Order[]                 @relation("SellerOrders")
+  walletTransactions     WalletTransaction[]
+  messagesSent           Message[]               @relation("MessageSender")
+  ratingsGiven           Rating[]                @relation("RatingAuthor")
+  ratingsReceived        Rating[]                @relation("RatingTarget")
+  notifications          Notification[]
   notificationPreference NotificationPreference?
-  adminRoles          AdminRoleAssignment[]
-  auditLogs           AuditLog[]
+  adminRoles             AdminRoleAssignment[]
+  auditLogs              AuditLog[]
+  sessions               UserSession[]
+  referralsMade          Referral[]              @relation("Referrer")
+  referralReceived       Referral?               @relation("Referred")
+  supportTickets         SupportTicket[]         @relation("TicketRequester")
+  ticketMessages         TicketMessage[]         @relation("TicketMessageAuthor")
+  following              Follow[]                @relation("Follower")
+  followers              Follow[]                @relation("Following")
+  bankAccounts           BankAccount[]
+  paymentMethods         PaymentMethod[]
+  withdrawals            Withdrawal[]
+  offersMade             Offer[]                 @relation("OfferBuyer")
+  bundles                Bundle[]                @relation("BundleBuyer")
+  listingPromotions      ListingPromotion[]
 }
 
 model Address {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  line1       String
-  line2       String?
-  city        String
-  postalCode  String
-  country     String
-  isDefault   Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  line1      String
+  line2      String?
+  city       String
+  postalCode String
+  country    String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
 
 model Category {
-  id        String     @id @default(cuid())
-  name      String
-  parentId  String?
-  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryTree")
-  listings  Listing[]
+  id       String     @id @default(cuid())
+  name     String
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  listings Listing[]
 }
 
 model Listing {
-  id            String        @id @default(cuid())
-  sellerId      String
-  seller        User          @relation("SellerListings", fields: [sellerId], references: [id])
-  title         String
-  description   String
-  categoryId    String
-  category      Category      @relation(fields: [categoryId], references: [id])
-  brand         String?
-  size          String?
-  condition     String?
-  color         String?
-  price         Decimal       @db.Decimal(10, 2)
-  currency      String
-  parcelSize    String        // e.g. small/medium/large/custom
-  images        String[]      // CDN urls
-  status        ListingStatus @default(DRAFT)
-  country       String
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id          String        @id @default(cuid())
+  sellerId    String
+  seller      User          @relation("SellerListings", fields: [sellerId], references: [id])
+  title       String
+  description String
+  categoryId  String
+  category    Category      @relation(fields: [categoryId], references: [id])
+  brand       String?
+  size        String?
+  condition   String?
+  color       String?
+  price       Decimal       @db.Decimal(10, 2)
+  currency    String
+  parcelSize  String // e.g. small/medium/large/custom
+  images      String[] // CDN urls
+  status      ListingStatus @default(DRAFT)
+  country     String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
-  orders        Order[]
-  favorites     Favorite[]
+  orders    Order[]
+  favorites Favorite[]
+  offers    Offer[]
+  bundleItems BundleItem[]
+  promotions ListingPromotion[]
 }
 
 model Favorite {
@@ -177,37 +249,37 @@ model SavedSearch {
 }
 
 model Order {
-  id                String      @id @default(cuid())
-  buyerId           String
-  buyer             User        @relation("BuyerOrders", fields: [buyerId], references: [id])
-  sellerId          String
-  seller            User        @relation("SellerOrders", fields: [sellerId], references: [id])
-  listingId         String
-  listing           Listing     @relation(fields: [listingId], references: [id])
-  status            OrderStatus @default(PENDING_PAYMENT)
+  id        String      @id @default(cuid())
+  buyerId   String
+  buyer     User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  sellerId  String
+  seller    User        @relation("SellerOrders", fields: [sellerId], references: [id])
+  listingId String
+  listing   Listing     @relation(fields: [listingId], references: [id])
+  status    OrderStatus @default(PENDING_PAYMENT)
 
-  itemPrice         Decimal     @db.Decimal(10, 2)
-  shippingPrice     Decimal     @db.Decimal(10, 2)
-  protectionFee     Decimal     @db.Decimal(10, 2)
-  totalPrice        Decimal     @db.Decimal(10, 2)
-  currency          String
+  itemPrice     Decimal @db.Decimal(10, 2)
+  shippingPrice Decimal @db.Decimal(10, 2)
+  protectionFee Decimal @db.Decimal(10, 2)
+  totalPrice    Decimal @db.Decimal(10, 2)
+  currency      String
 
   stripePaymentIntentId String?
-  shippingCarrier   String?
-  trackingNumber    String?
-  labelUrl          String?
-  shippedAt         DateTime?
-  deliveredAt       DateTime?
-  autoConfirmAt     DateTime?   // delivery + confirm window
-  releasedAt        DateTime?
+  shippingCarrier       String?
+  trackingNumber        String?
+  labelUrl              String?
+  shippedAt             DateTime?
+  deliveredAt           DateTime?
+  autoConfirmAt         DateTime? // delivery + confirm window
+  releasedAt            DateTime?
 
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   walletTransactions WalletTransaction[]
-  dispute           Dispute?
-  messages          Message[]
-  ratings           Rating[]
+  dispute            Dispute?
+  messages           Message[]
+  ratings            Rating[]
 }
 
 model WalletTransaction {
@@ -224,15 +296,15 @@ model WalletTransaction {
 }
 
 model Dispute {
-  id          String        @id @default(cuid())
-  orderId     String        @unique
-  order       Order         @relation(fields: [orderId], references: [id])
-  raisedById  String
-  reason      String
-  status      DisputeStatus @default(OPEN)
-  resolution  String?
-  createdAt   DateTime      @default(now())
-  resolvedAt  DateTime?
+  id         String        @id @default(cuid())
+  orderId    String        @unique
+  order      Order         @relation(fields: [orderId], references: [id])
+  raisedById String
+  reason     String
+  status     DisputeStatus @default(OPEN)
+  resolution String?
+  createdAt  DateTime      @default(now())
+  resolvedAt DateTime?
 }
 
 model Message {
@@ -247,24 +319,24 @@ model Message {
 }
 
 model Rating {
-  id          String   @id @default(cuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id])
-  authorId    String
-  author      User     @relation("RatingAuthor", fields: [authorId], references: [id])
-  targetId    String
-  target      User     @relation("RatingTarget", fields: [targetId], references: [id])
-  score       Int      // 1-5
-  comment     String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  authorId  String
+  author    User     @relation("RatingAuthor", fields: [authorId], references: [id])
+  targetId  String
+  target    User     @relation("RatingTarget", fields: [targetId], references: [id])
+  score     Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
 }
 
 model VerificationRecord {
   id            String   @id @default(cuid())
   userId        String
-  provider      String   // e.g. "veriff", "onfido"
+  provider      String // e.g. "veriff", "onfido"
   providerRefId String
-  status        String   // pending/approved/rejected
+  status        String // pending/approved/rejected
   createdAt     DateTime @default(now())
 }
 
@@ -298,19 +370,306 @@ model Notification {
   createdAt DateTime            @default(now())
 }
 
-// Per-user notification opt-ins (Phase 3.2). One row per user; each channel is
+// Active login sessions per user (Phase 1.3 — session management). Because we
+// use NextAuth's JWT strategy (no DB adapter), the JWT carries this row's id
+// (`sid`). The jwt() callback validates the sid against this table on every
+// request, so revoking a row (remote logout / suspicious-login response)
+// invalidates that device's token on its next call. `revokedAt` is a soft
+// delete so the audit trail of past sessions survives.
+model UserSession {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+
+  @@index([userId])
+}
+
+// Referral program (Phase 3.2). One row per successfully-referred signup, from
+// the referrer to the newly-created (referred) user. `referredId` is unique so
+// a user can be referred at most once. Reward fulfilment (crediting the wallet)
+// is deferred until a payout condition is chosen — the row tracks the status so
+// the reward layer can act on QUALIFIED rows once it lands.
+model Referral {
+  id          String         @id @default(cuid())
+  referrerId  String
+  referrer    User           @relation("Referrer", fields: [referrerId], references: [id])
+  referredId  String         @unique
+  referred    User           @relation("Referred", fields: [referredId], references: [id])
+  code        String
+  status      ReferralStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  qualifiedAt DateTime?
+  rewardedAt  DateTime?
+
+  @@index([referrerId])
+}
+
+// Support ticket system (Phase 3.3). A user opens a ticket; support agents
+// (RBAC `support.read` / `support.manage`) reply and change status. Messages
+// live in TicketMessage; `authorId` + `fromStaff` distinguish user vs. agent
+// replies (a snapshot boolean so the thread reads correctly even if the
+// author's admin role is later revoked). `lastReplyAt` is denormalized for
+// cheap ordering of the queue by recency.
+model SupportTicket {
+  id          String       @id @default(cuid())
+  requesterId String
+  requester   User         @relation("TicketRequester", fields: [requesterId], references: [id])
+  subject     String
+  category    String // billing / shipping / account / other
+  status      TicketStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  lastReplyAt DateTime     @default(now())
+  resolvedAt  DateTime?
+
+  messages TicketMessage[]
+
+  @@index([requesterId])
+  @@index([status])
+}
+
+model TicketMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id])
+  authorId  String
+  author    User          @relation("TicketMessageAuthor", fields: [authorId], references: [id])
+  fromStaff Boolean       @default(false) // snapshot: was the author acting as support?
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
+}
+
 // a coarse on/off toggle per event category. Absence of a row = defaults (all
 // transactional on, marketing off), created lazily on first save.
 model NotificationPreference {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id])
-  emailOrders       Boolean  @default(true)
-  emailMessages     Boolean  @default(true)
-  emailMarketing    Boolean  @default(false)
-  pushOrders        Boolean  @default(true)
-  pushMessages      Boolean  @default(true)
-  pushMarketing     Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  emailOrders    Boolean  @default(true)
+  emailMessages  Boolean  @default(true)
+  emailMarketing Boolean  @default(false)
+  pushOrders     Boolean  @default(true)
+  pushMessages   Boolean  @default(true)
+  pushMarketing  Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ==============================
+// SOCIAL LAYER
+// ==============================
+
+// Follow-a-seller (SOW §02 "follows, favorites, activity feed", §04 "follow-
+// seller"). Self-referential many-to-many on User. `followerId` follows
+// `followingId`. The pair is unique so a follow is idempotent.
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  follower    User     @relation("Follower", fields: [followerId], references: [id])
+  followingId String
+  following   User     @relation("Following", fields: [followingId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+}
+
+// ==============================
+// WALLET, PAYOUT & PAYMENT INSTRUMENTS
+// ==============================
+
+// Seller payout bank account (SOW §05 "Add/edit bank account details
+// (verified)", §08 step 5). Only non-sensitive/tokenized fields are stored —
+// the full account number lives with the regulated payment provider (Stripe
+// Connect external account). `providerAccountId` is the Stripe external-account
+// token; `last4` is display-only. Never store a raw IBAN/account number here.
+model BankAccount {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  label             String? // user-facing nickname
+  holderName        String
+  country           String
+  currency          String
+  last4             String // display only
+  providerAccountId String? // Stripe external account / bank token
+  verified          Boolean   @default(false)
+  isDefault         Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  archivedAt        DateTime?
+
+  withdrawals Withdrawal[]
+
+  @@index([userId])
+}
+
+// Buyer payment method (SOW §05 "Add/edit payment method — cards/wallets").
+// Card data is NEVER stored (PCI-DSS §10) — only the Stripe PaymentMethod token
+// plus display metadata (brand + last4) are kept for the account UI.
+model PaymentMethod {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  providerMethodId  String // Stripe PaymentMethod id (pm_...)
+  brand             String? // visa / mastercard / etc.
+  last4             String?
+  expMonth          Int?
+  expYear           Int?
+  isDefault         Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  archivedAt        DateTime?
+
+  @@index([userId])
+}
+
+// Withdrawal request: moves AVAILABLE wallet balance to a verified bank account
+// (SOW §08 step 5). HARD GATE: only permitted once the user is Level-3 ID
+// verified (KYC) — enforced in the withdrawal handler, mirrored here for audit.
+// `providerPayoutId` is the Stripe payout id once processing begins.
+model Withdrawal {
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id])
+  bankAccountId    String
+  bankAccount      BankAccount      @relation(fields: [bankAccountId], references: [id])
+  amount           Decimal          @db.Decimal(10, 2)
+  currency         String
+  status           WithdrawalStatus @default(REQUESTED)
+  providerPayoutId String?
+  failureReason    String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  processedAt      DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ==============================
+// OFFERS & BUNDLES
+// ==============================
+
+// Buyer's offer on a single listing (SOW §02 "makes offers"). A short
+// negotiation thread is captured by successive rows linked via `parentOfferId`
+// (counter-offers). The seller is derived from the listing, so only the buyer
+// is stored directly.
+model Offer {
+  id            String      @id @default(cuid())
+  listingId     String
+  listing       Listing     @relation(fields: [listingId], references: [id])
+  buyerId       String
+  buyer         User        @relation("OfferBuyer", fields: [buyerId], references: [id])
+  amount        Decimal     @db.Decimal(10, 2)
+  currency      String
+  status        OfferStatus @default(PENDING)
+  message       String?
+  parentOfferId String? // set on a counter-offer
+  parentOffer   Offer?      @relation("OfferThread", fields: [parentOfferId], references: [id])
+  counterOffers Offer[]     @relation("OfferThread")
+  expiresAt     DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([listingId])
+  @@index([buyerId])
+}
+
+// Smart bundle (SOW §09 "smart bundling — items that ship together to save on
+// postage"). A buyer groups multiple listings from the SAME seller into one
+// bundle for a combined shipment/price. Seller is derived from the items.
+model Bundle {
+  id        String       @id @default(cuid())
+  buyerId   String
+  buyer     User         @relation("BundleBuyer", fields: [buyerId], references: [id])
+  status    String       @default("draft") // draft / offered / accepted / cancelled
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  items BundleItem[]
+
+  @@index([buyerId])
+}
+
+model BundleItem {
+  id        String  @id @default(cuid())
+  bundleId  String
+  bundle    Bundle  @relation(fields: [bundleId], references: [id])
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id])
+
+  @@unique([bundleId, listingId])
+}
+
+// ==============================
+// PROMOTIONS, MARKETING & CMS (admin-facing)
+// ==============================
+
+// Paid seller listing promotion (SOW §05 "Listing promotion — bump/spotlight
+// (paid)"). A promotion is active between startsAt and endsAt. `stripePaymentId`
+// records the paid charge; feed ranking reads `active` promotions.
+model ListingPromotion {
+  id              String        @id @default(cuid())
+  listingId       String
+  listing         Listing       @relation(fields: [listingId], references: [id])
+  sellerId        String
+  seller          User          @relation(fields: [sellerId], references: [id])
+  type            PromotionType
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String
+  stripePaymentId String?
+  startsAt        DateTime      @default(now())
+  endsAt          DateTime
+  createdAt       DateTime      @default(now())
+
+  @@index([listingId])
+  @@index([endsAt])
+}
+
+// Staff marketing campaign / banner / featured block (SOW §05 admin
+// "Promotions & marketing", §06 Marketing manager). RBAC-gated in the admin
+// panel. `payload` holds type-specific config (image url, target url, listing
+// ids for a featured block, etc.).
+model Campaign {
+  id        String       @id @default(cuid())
+  name      String
+  type      CampaignType
+  active    Boolean      @default(false)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  payload   Json?
+  createdById String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([type])
+  @@index([active])
+}
+
+// CMS content page / blog post (SOW §05 admin "Content / CMS & SEO", §06
+// SEO/content manager). `slug` drives the public URL; the meta* fields feed
+// on-page SEO. RBAC-gated (seo.manage) in the admin panel.
+model ContentPage {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           String
+  body            String // markdown / rich text
+  isBlog          Boolean       @default(false) // false = static page, true = blog post
+  status          ContentStatus @default(DRAFT)
+  metaTitle       String?
+  metaDescription String?
+  authorId        String?
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status])
+  @@index([isBlog])
 }

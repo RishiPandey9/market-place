@@ -8,6 +8,7 @@ import {
   availableBalance,
   checkWithdrawalEligibility,
   canWalletTransition,
+  initialWithdrawalStatus,
 } from "@/lib/escrow";
 import { isKycSandbox } from "@/lib/kyc";
 import { rateLimit, rateLimitHeaders, RATE_LIMITS } from "@/lib/ratelimit";
@@ -72,10 +73,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  // A verified payout destination is required before any withdrawal (SOW §08
+  // step 5). The default (or only) non-archived bank account is used.
+  const bankAccount = await prisma.bankAccount.findFirst({
+    where: { userId: user.id, archivedAt: null },
+    orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+    select: { id: true, currency: true },
+  });
+  if (!bankAccount) {
+    return NextResponse.json(
+      {
+        error:
+          "Add a payout bank account in Settings → Payouts before withdrawing.",
+        reason: "no_bank_account",
+      },
+      { status: 400 },
+    );
+  }
+
   // Load the seller's cleared escrow rows. Decimal → number for the pure check.
   const availableRows = await prisma.walletTransaction.findMany({
     where: { userId: user.id, state: WalletState.AVAILABLE },
-    select: { id: true, amount: true, state: true },
+    select: { id: true, amount: true, state: true, currency: true },
   });
   const wallet = availableRows.map((r) => ({
     amount: Number(r.amount),
@@ -139,10 +158,28 @@ export async function POST(req: Request) {
   }
 
   const rowIds = availableRows.map((r) => r.id);
+  // Currency of the payout — taken from the cleared rows (all one currency at
+  // the single-market launch), falling back to the bank account's currency.
+  const payoutCurrency = availableRows[0]?.currency ?? bankAccount.currency;
+
+  // SANDBOX FLAG: no real bank transfer happens yet. The Withdrawal row is
+  // recorded as PAID to reflect the sandbox escrow-release; wire this to a real
+  // Stripe Connect payout (status REQUESTED → PROCESSING → PAID via webhook)
+  // before launch. The KYC gate above is real in both modes.
   const ops: Prisma.PrismaPromise<unknown>[] = [
     prisma.walletTransaction.updateMany({
       where: { id: { in: rowIds }, state: WalletState.AVAILABLE },
       data: { state: WalletState.WITHDRAWN },
+    }),
+    prisma.withdrawal.create({
+      data: {
+        userId: user.id,
+        bankAccountId: bankAccount.id,
+        amount: check.availableBalance,
+        currency: payoutCurrency,
+        status: initialWithdrawalStatus(isKycSandbox()),
+        processedAt: isKycSandbox() ? new Date() : null,
+      },
     }),
     prisma.auditLog.create({
       data: {
@@ -151,6 +188,7 @@ export async function POST(req: Request) {
         metadata: {
           amount: check.availableBalance,
           transactionIds: rowIds,
+          bankAccountId: bankAccount.id,
           kycSandbox: isKycSandbox(),
         },
       },

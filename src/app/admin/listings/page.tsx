@@ -27,12 +27,15 @@ export default async function AdminListingsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-900">
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">
         Listings
       </h1>
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <p className="mt-1 mb-6 text-sm text-ink-soft">
+        Pending-review listings appear first so the moderation queue stays actionable.
+      </p>
+      <div className="overflow-x-auto rounded-2xl border border-brand-100 bg-white">
         <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+          <thead className="border-b border-brand-100 bg-brand-50 text-xs uppercase text-brand-700">
             <tr>
               <th className="px-4 py-3">Title</th>
               <th className="px-4 py-3">Seller</th>
@@ -41,15 +44,15 @@ export default async function AdminListingsPage() {
               {canModerate && <th className="px-4 py-3">Actions</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-brand-50">
             {listings.map((l) => (
-              <tr key={l.id}>
-                <td className="px-4 py-3 text-gray-900">{l.title}</td>
-                <td className="px-4 py-3 text-gray-600">{l.seller.email}</td>
-                <td className="px-4 py-3 text-gray-600">
+              <tr key={l.id} className="hover:bg-brand-50/60">
+                <td className="px-4 py-3 text-ink">{l.title}</td>
+                <td className="px-4 py-3 text-ink-soft">{l.seller.email}</td>
+                <td className="px-4 py-3 text-ink-soft">
                   {l.currency} {l.price.toString()}
                 </td>
-                <td className="px-4 py-3 text-gray-600">{l.status}</td>
+                <td className="px-4 py-3 text-ink-soft">{l.status}</td>
                 {canModerate && (
                   <td className="px-4 py-3">
                     <ModerateListingControl listingId={l.id} status={l.status} />

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { OrderStatus, WalletState, VerificationLevel } from "@prisma/client";
+import { OrderStatus, WalletState, VerificationLevel, WithdrawalStatus } from "@prisma/client";
 
 import {
   calculateProtectionFee,
@@ -13,6 +13,7 @@ import {
   shipDeadline,
   availableBalance,
   checkWithdrawalEligibility,
+  initialWithdrawalStatus,
   WITHDRAWAL_REQUIRED_LEVEL,
   PROTECTION_FEE_PERCENT,
   PROTECTION_FEE_FIXED,
@@ -225,5 +226,15 @@ describe("withdrawal eligibility (money-critical, KYC-gated)", () => {
     expect(res.ok).toBe(false);
     expect(res.availableBalance).toBe(0);
     expect(res.ok === false && res.reason).toBe("insufficient_available");
+  });
+});
+
+describe("initialWithdrawalStatus", () => {
+  it("marks the withdrawal PAID immediately in sandbox (no real payout wired)", () => {
+    expect(initialWithdrawalStatus(true)).toBe(WithdrawalStatus.PAID);
+  });
+
+  it("starts REQUESTED in production so the payout webhook advances it", () => {
+    expect(initialWithdrawalStatus(false)).toBe(WithdrawalStatus.REQUESTED);
   });
 });

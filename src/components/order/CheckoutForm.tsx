@@ -11,7 +11,7 @@ type Props = {
 };
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none";
+  "w-full rounded-xl border border-brand-200 px-3 py-2 text-sm text-ink outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30";
 
 function fmt(amount: number, currency: string) {
   try {
@@ -70,7 +70,7 @@ export function CheckoutForm({ listingId, itemPrice, currency, country }: Props)
   return (
     <form action={onSubmit} className="space-y-6">
       <div className="space-y-3">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-gray-400">
+        <h2 className="text-sm font-medium uppercase tracking-wide text-ink-soft">
           Shipping address
         </h2>
         <input name="line1" placeholder="Address line 1" required className={inputClass} />
@@ -89,35 +89,35 @@ export function CheckoutForm({ listingId, itemPrice, currency, country }: Props)
         />
       </div>
 
-      <div className="space-y-2 rounded-lg border border-gray-200 p-4 text-sm">
+      <div className="space-y-2 rounded-2xl border border-brand-100 bg-white p-4 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-500">Item</span>
+          <span className="text-ink-soft">Item</span>
           <span>{fmt(item, currency)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">Shipping (Standard)</span>
+          <span className="text-ink-soft">Shipping (Standard)</span>
           <span>{fmt(FLAT_SHIPPING, currency)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-500">Buyer protection</span>
+          <span className="text-ink-soft">Buyer protection</span>
           <span>{fmt(protectionFee, currency)}</span>
         </div>
-        <div className="mt-2 flex justify-between border-t border-gray-100 pt-2 font-semibold">
+        <div className="mt-2 flex justify-between border-t border-brand-100 pt-2 font-semibold">
           <span>Total</span>
           <span>{fmt(total, currency)}</span>
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-md bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+        className="w-full rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50"
       >
         {submitting ? "Processing…" : `Pay ${fmt(total, currency)}`}
       </button>
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-ink-soft">
         Your payment is held in escrow until you confirm delivery.
       </p>
     </form>
