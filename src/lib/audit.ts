@@ -51,6 +51,8 @@ export type KnownAuditAction =
   | "offer_countered"
   | "offer_withdrawn"
   | "bundle_created"
+  | "bundle_checkout"
+  | "bundle_cancelled"
   // promotions & marketing
   | "listing_promoted"
   | "campaign_created"

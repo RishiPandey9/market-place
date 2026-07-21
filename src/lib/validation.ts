@@ -483,6 +483,21 @@ export const createBundleSchema = z.object({
 });
 export type CreateBundleInput = z.infer<typeof createBundleSchema>;
 
+// Bundle checkout: the buyer supplies a ship-to address and the single combined
+// shipping price. Item prices come server-side from each listing, never the
+// client (same rule as a solo order).
+export const bundleCheckoutSchema = z.object({
+  address: shippingAddressSchema,
+  shippingPrice: z.coerce
+    .number({ error: "Enter a shipping price" })
+    .nonnegative("Shipping price cannot be negative")
+    .max(9_999.99)
+    .refine((n) => Math.round(n * 100) === n * 100, {
+      message: "Shipping price can have at most 2 decimal places",
+    }),
+});
+export type BundleCheckoutInput = z.infer<typeof bundleCheckoutSchema>;
+
 // ==============================
 // Listing promotion — paid bump/spotlight (SOW §05)
 // ==============================

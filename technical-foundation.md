@@ -665,6 +665,9 @@ DEFAULT_COUNTRY=
 | POST | `/api/orders/[id]/confirm` | Buyer confirms delivery |
 | GET/POST | `/api/offers` | List offers (`?box=sent\|received`) / make an offer on a listing. Owner-scoped; amount must be ≤ asking price. Audited. (SOW §02/§05) |
 | POST | `/api/offers/[id]` | Act on an offer: accept / decline / counter / withdraw. Ownership + negotiation-state gated (src/lib/offer.ts). Audited. |
+| GET/POST | `/api/bundles` | List the buyer's bundles / create a draft bundle of 2–20 ACTIVE listings from ONE seller. Same-seller + distinct + not-own gated. Audited. (SOW §09) |
+| POST | `/api/bundles/[id]/checkout` | Buy a draft bundle: one escrow Order per item, created atomically, shipping charged once (src/lib/bundle.ts). Item prices server-authoritative. Money-critical. Audited. |
+| POST | `/api/bundles/[id]/cancel` | Buyer discards a draft bundle (draft → cancelled). Owner-scoped. Audited. |
 | POST | `/api/wallet/withdraw` | Request payout to bank. KYC-gated (Level 3). Money-critical. |
 | PATCH | `/api/settings/profile` | Update signed-in user's contact + locale fields. Owner-scoped. |
 | POST | `/api/settings/password` | Change password (bcrypt verify current + hash new). Rate-limited, audited. |

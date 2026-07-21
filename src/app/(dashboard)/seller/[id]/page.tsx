@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { ListingCard } from "@/components/listing/ListingCard";
 import { TrustBadges } from "@/components/trust/TrustBadges";
 import { FollowButton } from "@/components/social/FollowButton";
+import { BundleBuilder } from "@/components/bundle/BundleBuilder";
 
 // Public seller profile (Phase 1.10 / doc page inventory: /seller/[id]).
 // Shows the seller's rating summary, their reviews, and their active listings.
@@ -147,6 +148,18 @@ export default async function SellerProfilePage({
         </h2>
         {listings.length === 0 ? (
           <p className="text-sm text-ink-soft">No active listings.</p>
+        ) : viewerId && !isSelf ? (
+          <BundleBuilder
+            listings={listings.map((l) => ({
+              id: l.id,
+              title: l.title,
+              price: l.price.toString(),
+              currency: l.currency,
+              image: l.images[0] ?? null,
+              brand: l.brand,
+              size: l.size,
+            }))}
+          />
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {listings.map((l) => (
