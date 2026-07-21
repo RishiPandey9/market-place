@@ -5,6 +5,7 @@ import { useState } from "react";
 
 type Props = {
   listingId: string;
+  offerId?: string;
   itemPrice: string;
   currency: string;
   country: string;
@@ -26,7 +27,7 @@ function fmt(amount: number, currency: string) {
 // placeholder to be replaced by live rates before launch.
 const FLAT_SHIPPING = 3.99;
 
-export function CheckoutForm({ listingId, itemPrice, currency, country }: Props) {
+export function CheckoutForm({ listingId, offerId, itemPrice, currency, country }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -44,6 +45,7 @@ export function CheckoutForm({ listingId, itemPrice, currency, country }: Props)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           listingId,
+          ...(offerId ? { offerId } : {}),
           shippingPrice: FLAT_SHIPPING,
           address: {
             line1: form.get("line1"),

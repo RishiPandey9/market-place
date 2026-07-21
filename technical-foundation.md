@@ -659,10 +659,12 @@ DEFAULT_COUNTRY=
 | DELETE | `/api/listings/[id]` | Remove/hide listing |
 | GET | `/api/search` | Search listings (query + filters) |
 | POST | `/api/upload` | Upload image to Cloudinary |
-| POST | `/api/orders` | Create order (checkout) |
+| POST | `/api/orders` | Create order (checkout). Accepts optional `offerId` to price at an accepted offer (verified server-side). |
 | GET | `/api/orders/[id]` | Order detail + tracking |
 | POST | `/api/orders/[id]/ship` | Seller marks shipped, generates label |
 | POST | `/api/orders/[id]/confirm` | Buyer confirms delivery |
+| GET/POST | `/api/offers` | List offers (`?box=sent\|received`) / make an offer on a listing. Owner-scoped; amount must be ≤ asking price. Audited. (SOW §02/§05) |
+| POST | `/api/offers/[id]` | Act on an offer: accept / decline / counter / withdraw. Ownership + negotiation-state gated (src/lib/offer.ts). Audited. |
 | POST | `/api/wallet/withdraw` | Request payout to bank. KYC-gated (Level 3). Money-critical. |
 | PATCH | `/api/settings/profile` | Update signed-in user's contact + locale fields. Owner-scoped. |
 | POST | `/api/settings/password` | Change password (bcrypt verify current + hash new). Rate-limited, audited. |

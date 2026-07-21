@@ -149,6 +149,9 @@ export const shippingAddressSchema = z.object({
 
 export const createOrderSchema = z.object({
   listingId: z.string().min(1, "listingId is required"),
+  // Optional accepted-offer id: when present, the server prices the item at the
+  // agreed offer amount instead of the list price (verified server-side).
+  offerId: z.string().trim().min(1).optional(),
   address: shippingAddressSchema,
   shippingOptionId: z.string().trim().min(1).optional(),
   shippingPrice: z.coerce
@@ -445,7 +448,7 @@ const offerAmount = z.coerce
   .number({ error: "Enter an offer amount" })
   .positive("Offer must be greater than 0")
   .max(99_999_999.99, "Offer is too large")
-  .refine((n) => Number.isFinite(n) && Math.round(n * 100) === n * 100, {
+  .refine((n) => Number.isFinite(n) && Math.abs(Math.round(n * 100) - n * 100) <= 1e-6, {
     message: "Offer can have at most 2 decimal places",
   });
 

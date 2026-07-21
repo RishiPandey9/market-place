@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { DeleteListingButton } from "@/components/listing/DeleteListingButton";
 import { ListingGallery } from "@/components/listing/ListingGallery";
+import { MakeOfferControl } from "@/components/offer/MakeOfferControl";
 import { TrustBadges } from "@/components/trust/TrustBadges";
 
 function formatPrice(price: string, currency: string): string {
@@ -130,6 +131,13 @@ export default async function ListingDetailPage({
                   >
                     Log in to buy
                   </Link>
+                )}
+                {session?.user && (
+                  <MakeOfferControl
+                    listingId={listing.id}
+                    listPrice={listing.price.toString()}
+                    currency={listing.currency}
+                  />
                 )}
                 <p className="flex items-center justify-center gap-1.5 text-xs text-ink-soft">
                   <svg className="h-3.5 w-3.5 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>

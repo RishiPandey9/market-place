@@ -86,7 +86,10 @@ export function isValidOfferAmount(
   listingPrice: number,
 ): boolean {
   if (!Number.isFinite(amount) || amount <= 0) return false;
-  if (Math.round(amount * 100) !== amount * 100) return false; // sub-penny
+  // Whole pence only. Compare with a tolerance: binary floats can't represent
+  // values like 19.99 exactly (19.99*100 === 1998.9999…), so a strict equality
+  // would wrongly reject valid prices ending in .99.
+  if (Math.abs(Math.round(amount * 100) - amount * 100) > 1e-6) return false;
   if (amount > listingPrice) return false;
   return true;
 }

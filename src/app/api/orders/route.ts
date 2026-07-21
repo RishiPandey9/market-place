@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const { listingId, address, shippingPrice } = parsed.data;
+  const { listingId, offerId, address, shippingPrice } = parsed.data;
   const buyerId = session.user.id;
 
   const listing = await prisma.listing.findUnique({
@@ -63,8 +63,29 @@ export async function POST(req: Request) {
     );
   }
 
-  // Item price + currency come from the listing, never the client.
-  const itemPrice = Number(listing.price);
+  // Item price comes from the listing, never the client. If an accepted offer
+  // is supplied, the item is priced at the AGREED amount instead — but only
+  // after verifying the offer belongs to this buyer + listing and is ACCEPTED.
+  let itemPrice = Number(listing.price);
+  if (offerId) {
+    const offer = await prisma.offer.findUnique({
+      where: { id: offerId },
+      select: { id: true, buyerId: true, listingId: true, status: true, amount: true },
+    });
+    if (
+      !offer ||
+      offer.buyerId !== buyerId ||
+      offer.listingId !== listing.id ||
+      offer.status !== "ACCEPTED"
+    ) {
+      return NextResponse.json(
+        { error: "Accepted offer not found for this listing" },
+        { status: 400 },
+      );
+    }
+    itemPrice = Number(offer.amount);
+  }
+
   const pricing = calculateOrderPricing(itemPrice, shippingPrice);
   const currency = listing.currency;
 

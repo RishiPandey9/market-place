@@ -44,6 +44,7 @@ export function AccountMenu({
   ];
   const account: Item[] = [
     { href: "/orders", label: "My orders" },
+    { href: "/offers", label: "My offers" },
     { href: "/wallet", label: "Wallet & payouts" },
     { href: "/following", label: "Following" },
     { href: "/settings/profile", label: "Settings" },
